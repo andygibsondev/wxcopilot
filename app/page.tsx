@@ -534,6 +534,7 @@ export default function Home() {
           font-size: 0.75rem;
           font-weight: 500;
           color: rgba(255, 255, 255, 0.8);
+          margin-left: 0.75rem;
           padding-left: 0.75rem;
           border-left: 1px solid rgba(255, 255, 255, 0.3);
         }
