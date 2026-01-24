@@ -9,6 +9,7 @@ import { CloudBaseDisplay } from '@/components/CloudBaseDisplay';
 import { FlightDecision } from '@/components/FlightDecision';
 import { MetarTafPanel } from '@/components/MetarTafPanel';
 import { DebugPanel } from '@/components/DebugPanel';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 // Generate day options for the next 7 days
 function getDayOptions() {
@@ -50,6 +51,16 @@ export default function Home() {
   const [aircraftType, setAircraftType] = useState<AircraftType>('light');
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  // Initial app loading
+  useEffect(() => {
+    // Simulate minimum loading time for splash screen
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Scroll to section and close menu
   const scrollToSection = (id: string) => {
@@ -213,6 +224,11 @@ export default function Home() {
   // Calculate cloud base
   const dewPoint = currentTemperature - ((100 - currentHumidity) / 5);
   const cloudBaseFeet = Math.max(0, (currentTemperature - dewPoint) * 400);
+
+  // Show loading screen on initial load
+  if (isAppLoading) {
+    return <LoadingScreen message="Preparing your flight data..." />;
+  }
 
   return (
     <>
