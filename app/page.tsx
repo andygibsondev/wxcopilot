@@ -202,11 +202,14 @@ export default function Home() {
   const cloudBaseFeet = Math.max(0, (currentTemperature - dewPoint) * 400);
 
   return (
-    <div className="container">
-      <header className="header">
-        <h1>✈️ WxCopilot</h1>
-        <p className="subtitle">Aviation weather information for UK aerodromes</p>
+    <>
+      {/* Fixed header bar at top */}
+      <header className="fixed-header">
+        <span className="fixed-header-title">✈️ WxCopilot</span>
+        <span className="fixed-header-subtitle">Aviation Weather</span>
       </header>
+
+      <div className="container">
 
       <div className={`aerodrome-selector ${isPanelCollapsed ? 'collapsed' : ''}`}>
         {/* Collapsed Summary Header */}
@@ -500,29 +503,48 @@ export default function Home() {
         /* ========================================
            MODERN GLASSMORPHISM DESIGN
            ======================================== */
-        
-        .header {
-          text-align: center;
-          color: var(--color-text-light, #f8fafc);
-          margin-bottom: 1.5rem;
-          padding: 1.5rem 0;
+
+        /* Fixed header bar at top */
+        .fixed-header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          background: rgba(15, 23, 42, 0.9);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 0.75rem 1rem;
+          padding-top: calc(0.75rem + env(safe-area-inset-top));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .header h1 {
-          font-size: 2rem;
+        .fixed-header-title {
+          font-size: 1.125rem;
           font-weight: 800;
-          margin-bottom: 0.5rem;
           background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.01em;
         }
 
-        .subtitle {
-          font-size: 0.9rem;
-          color: rgba(255, 255, 255, 0.7);
+        .fixed-header-subtitle {
+          font-size: 0.75rem;
           font-weight: 500;
+          color: rgba(255, 255, 255, 0.5);
+          padding-left: 0.5rem;
+          border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Container needs padding-top for fixed header */
+        .container {
+          padding-top: calc(3.5rem + env(safe-area-inset-top));
         }
 
         /* Glassmorphism card */
@@ -808,17 +830,21 @@ export default function Home() {
            TABLET BREAKPOINT (768px+)
            ======================================== */
         @media (min-width: 768px) {
-          .header {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem 0;
+          .fixed-header {
+            padding: 0.875rem 1.5rem;
+            padding-top: calc(0.875rem + env(safe-area-inset-top));
           }
 
-          .header h1 {
-            font-size: 2.25rem;
+          .fixed-header-title {
+            font-size: 1.25rem;
           }
 
-          .subtitle {
-            font-size: 1rem;
+          .fixed-header-subtitle {
+            font-size: 0.8125rem;
+          }
+
+          .container {
+            padding-top: calc(4rem + env(safe-area-inset-top));
           }
 
           .aerodrome-selector {
@@ -1019,6 +1045,7 @@ export default function Home() {
         }
       `}</style>
     </div>
+    </>
   );
 }
 
