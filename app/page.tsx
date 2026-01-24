@@ -41,6 +41,12 @@ const AIRCRAFT_OPTIONS: { value: AircraftType; label: string; icon: string }[] =
   { value: 'microlight', label: 'Microlight', icon: '🛫' },
 ];
 
+// LocalStorage keys
+const STORAGE_KEYS = {
+  DEFAULT_AERODROME: 'wxcopilot_default_aerodrome',
+  DEFAULT_AIRCRAFT: 'wxcopilot_default_aircraft',
+};
+
 export default function Home() {
   const [selectedAerodrome, setSelectedAerodrome] = useState(UK_AERODROMES[0]);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
@@ -52,6 +58,63 @@ export default function Home() {
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAppLoading, setIsAppLoading] = useState(true);
+  const [hasDefaults, setHasDefaults] = useState(false);
+  const [defaultsSaved, setDefaultsSaved] = useState(false);
+  const [shouldAutoFetch, setShouldAutoFetch] = useState(false);
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+
+  // Load saved preferences from localStorage
+  useEffect(() => {
+    try {
+      const savedAerodrome = localStorage.getItem(STORAGE_KEYS.DEFAULT_AERODROME);
+      const savedAircraft = localStorage.getItem(STORAGE_KEYS.DEFAULT_AIRCRAFT);
+      let foundDefaults = false;
+
+      if (savedAerodrome) {
+        const aerodrome = UK_AERODROMES.find(a => a.name === savedAerodrome);
+        if (aerodrome) {
+          setSelectedAerodrome(aerodrome);
+          foundDefaults = true;
+        }
+      }
+
+      if (savedAircraft && ['light', 'microlight', 'jet'].includes(savedAircraft)) {
+        setAircraftType(savedAircraft as AircraftType);
+        foundDefaults = true;
+      }
+
+      setHasDefaults(foundDefaults);
+      setShouldAutoFetch(foundDefaults);
+      setPrefsLoaded(true);
+    } catch (e) {
+      console.error('Error loading preferences:', e);
+      setPrefsLoaded(true);
+    }
+  }, []);
+
+  // Save current selection as defaults
+  const saveAsDefaults = () => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.DEFAULT_AERODROME, selectedAerodrome.name);
+      localStorage.setItem(STORAGE_KEYS.DEFAULT_AIRCRAFT, aircraftType);
+      setHasDefaults(true);
+      setDefaultsSaved(true);
+      setTimeout(() => setDefaultsSaved(false), 2000);
+    } catch (e) {
+      console.error('Error saving preferences:', e);
+    }
+  };
+
+  // Clear saved defaults
+  const clearDefaults = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.DEFAULT_AERODROME);
+      localStorage.removeItem(STORAGE_KEYS.DEFAULT_AIRCRAFT);
+      setHasDefaults(false);
+    } catch (e) {
+      console.error('Error clearing preferences:', e);
+    }
+  };
 
   // Initial app loading
   useEffect(() => {
@@ -140,9 +203,14 @@ export default function Home() {
     }
   }, [selectedAerodrome, selectedDay, selectedHour]);
 
+  // Auto-fetch weather if defaults are loaded (only on initial load)
   useEffect(() => {
-    fetchWeather();
-  }, [fetchWeather]);
+    if (!isAppLoading && prefsLoaded && shouldAutoFetch) {
+      fetchWeather();
+      setShouldAutoFetch(false); // Only auto-fetch once
+      setIsPanelCollapsed(true); // Collapse the panel after auto-search
+    }
+  }, [isAppLoading, prefsLoaded, shouldAutoFetch, fetchWeather]);
 
   const currentWeather = weatherData?.current_weather;
   const hourly = weatherData?.hourly;
@@ -281,7 +349,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="container">
+      <div className={`container ${isPanelCollapsed ? 'has-collapsed-panel' : ''}`}>
 
       <div id="search-section" className={`aerodrome-selector ${isPanelCollapsed ? 'collapsed' : ''}`}>
         {/* Collapsed Summary Header */}
@@ -396,6 +464,26 @@ export default function Home() {
             <button onClick={fetchWeather} disabled={loading} className="refresh-btn">
               {loading ? 'Loading...' : '🔄 Get Weather'}
             </button>
+
+            {/* Default Settings */}
+            <div className="defaults-section">
+              <button 
+                onClick={saveAsDefaults} 
+                className={`save-defaults-btn ${defaultsSaved ? 'saved' : ''}`}
+                disabled={loading}
+              >
+                {defaultsSaved ? '✓ Saved!' : '⭐ Set as My Default'}
+              </button>
+              {hasDefaults && (
+                <button 
+                  onClick={clearDefaults} 
+                  className="clear-defaults-btn"
+                  disabled={loading}
+                >
+                  Clear Defaults
+                </button>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -600,8 +688,17 @@ export default function Home() {
 
         /* Collapsed state */
         .aerodrome-selector.collapsed {
+          position: fixed;
+          top: calc(3.5rem + env(safe-area-inset-top));
+          left: 0;
+          right: 0;
+          width: 100%;
+          z-index: 999;
           padding: 0;
           gap: 0;
+          margin-bottom: 0;
+          border-radius: 0;
+          box-shadow: none;
         }
 
         .collapsed-header {
@@ -609,12 +706,12 @@ export default function Home() {
           align-items: center;
           justify-content: space-between;
           width: 100%;
-          padding: 1.25rem;
-          background: rgba(255, 255, 255, 0.95);
+          padding: 0.875rem 1rem;
+          background: rgba(255, 255, 255, 0.98);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border: none;
-          border-radius: var(--radius-xl, 24px);
+          border-radius: var(--radius-lg, 16px);
           cursor: pointer;
           transition: all var(--transition-base, 200ms);
           -webkit-tap-highlight-color: transparent;
@@ -859,6 +956,71 @@ export default function Home() {
           cursor: not-allowed;
         }
 
+        /* Defaults Section */
+        .defaults-section {
+          display: flex;
+          gap: 0.75rem;
+          margin-top: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .save-defaults-btn {
+          flex: 1;
+          padding: 0.75rem 1rem;
+          background: transparent;
+          color: var(--color-primary, #6366f1);
+          border: 2px solid var(--color-primary, #6366f1);
+          border-radius: var(--radius-md, 12px);
+          font-size: 0.9375rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 150ms ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .save-defaults-btn:hover:not(:disabled) {
+          background: rgba(99, 102, 241, 0.1);
+        }
+
+        .save-defaults-btn:active:not(:disabled) {
+          transform: scale(0.98);
+        }
+
+        .save-defaults-btn.saved {
+          background: var(--color-success, #10b981);
+          border-color: var(--color-success, #10b981);
+          color: white;
+        }
+
+        .save-defaults-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .clear-defaults-btn {
+          padding: 0.75rem 1rem;
+          background: transparent;
+          color: var(--color-text-muted, #64748b);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: var(--radius-md, 12px);
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 150ms ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .clear-defaults-btn:hover:not(:disabled) {
+          background: rgba(0, 0, 0, 0.05);
+          color: var(--color-danger, #ef4444);
+          border-color: var(--color-danger, #ef4444);
+        }
+
+        .clear-defaults-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
         /* ========================================
            TABLET BREAKPOINT (768px+)
            ======================================== */
@@ -866,6 +1028,18 @@ export default function Home() {
           .aerodrome-selector {
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+          }
+
+          .aerodrome-selector.collapsed {
+            top: calc(4rem + env(safe-area-inset-top));
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: none;
+          }
+
+          .collapsed-header {
+            padding: 1rem 1.25rem;
           }
 
           .selector-row {
