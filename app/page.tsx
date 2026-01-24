@@ -506,45 +506,6 @@ export default function Home() {
            MODERN GLASSMORPHISM DESIGN
            ======================================== */
 
-        /* Fixed header bar at top */
-        .fixed-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 1000;
-          background: #ffffff;
-          border-bottom: 2px solid #6366f1;
-          padding: 0.75rem 1rem;
-          padding-top: calc(0.75rem + env(safe-area-inset-top));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        .fixed-header-content {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .fixed-header-logo {
-          font-size: 1.5rem;
-        }
-
-        .fixed-header-title {
-          font-size: 1.375rem;
-          font-weight: 800;
-          color: #1e293b;
-          letter-spacing: -0.02em;
-        }
-
-        /* Container needs padding-top for fixed header */
-        .container {
-          padding-top: calc(3.5rem + env(safe-area-inset-top));
-        }
-
         /* Glassmorphism card */
         .aerodrome-selector {
           background: rgba(255, 255, 255, 0.95);
@@ -828,23 +789,6 @@ export default function Home() {
            TABLET BREAKPOINT (768px+)
            ======================================== */
         @media (min-width: 768px) {
-          .fixed-header {
-            padding: 0.875rem 1.5rem;
-            padding-top: calc(0.875rem + env(safe-area-inset-top));
-          }
-
-          .fixed-header-title {
-            font-size: 1.5rem;
-          }
-
-          .fixed-header-logo {
-            font-size: 1.75rem;
-          }
-
-          .container {
-            padding-top: calc(4rem + env(safe-area-inset-top));
-          }
-
           .aerodrome-selector {
             padding: 1.5rem;
             margin-bottom: 1.5rem;
