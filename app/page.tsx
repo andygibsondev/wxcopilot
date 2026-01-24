@@ -206,7 +206,7 @@ export default function Home() {
       {/* Fixed header bar at top */}
       <header className="fixed-header">
         <span className="fixed-header-title">✈️ WxCopilot</span>
-        <span className="fixed-header-subtitle">Aviation Weather</span>
+        <span className="fixed-header-subtitle">Your weather copilot for every flight</span>
       </header>
 
       <div className="container">
@@ -511,35 +511,31 @@ export default function Home() {
           left: 0;
           right: 0;
           z-index: 1000;
-          background: rgba(15, 23, 42, 0.9);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 0.75rem 1rem;
-          padding-top: calc(0.75rem + env(safe-area-inset-top));
+          background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+          border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+          padding: 0.875rem 1rem;
+          padding-top: calc(0.875rem + env(safe-area-inset-top));
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 0.5rem;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          gap: 0.75rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .fixed-header-title {
-          font-size: 1.125rem;
+          font-size: 1.25rem;
           font-weight: 800;
-          background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #fff;
           letter-spacing: -0.01em;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .fixed-header-subtitle {
           font-size: 0.75rem;
           font-weight: 500;
-          color: rgba(255, 255, 255, 0.5);
-          padding-left: 0.5rem;
-          border-left: 1px solid rgba(255, 255, 255, 0.2);
+          color: rgba(255, 255, 255, 0.8);
+          padding-left: 0.75rem;
+          border-left: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         /* Container needs padding-top for fixed header */
