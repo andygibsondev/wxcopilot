@@ -29,46 +29,82 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({
       </div>
       <style jsx>{`
         .weather-card {
-          background: white;
-          border-radius: 12px;
-          padding: 1.5rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          transition: transform 0.2s, box-shadow 0.2s;
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+          border-radius: 16px;
+          padding: 1rem;
+          border: 1px solid rgba(0, 0, 0, 0.04);
+          transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
         }
-        .weather-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        .weather-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+          opacity: 0;
+          transition: opacity 150ms;
+        }
+        .weather-card:hover::before {
+          opacity: 1;
         }
         .weather-card-header {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.625rem;
         }
         .weather-card-header h3 {
-          font-size: 0.875rem;
+          font-size: 0.6875rem;
           font-weight: 600;
-          color: #666;
+          color: #64748b;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.06em;
         }
         .weather-icon {
-          font-size: 1.25rem;
+          font-size: 1.125rem;
+          filter: saturate(1.2);
         }
         .weather-card-value {
           display: flex;
           align-items: baseline;
-          gap: 0.25rem;
+          gap: 0.375rem;
+          flex-wrap: wrap;
         }
         .value {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #333;
+          font-size: 1.625rem;
+          font-weight: 800;
+          color: #1e293b;
+          line-height: 1;
+          letter-spacing: -0.02em;
         }
         .unit {
-          font-size: 1rem;
-          color: #666;
-          font-weight: 500;
+          font-size: 0.875rem;
+          color: #64748b;
+          font-weight: 600;
+        }
+        
+        /* Tablet and up */
+        @media (min-width: 768px) {
+          .weather-card {
+            padding: 1.25rem;
+            border-radius: 20px;
+          }
+          .weather-card-header h3 {
+            font-size: 0.75rem;
+          }
+          .weather-icon {
+            font-size: 1.375rem;
+          }
+          .value {
+            font-size: 2rem;
+          }
+          .unit {
+            font-size: 1rem;
+          }
         }
       `}</style>
     </div>

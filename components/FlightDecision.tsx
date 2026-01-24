@@ -50,7 +50,7 @@ const AIRCRAFT_LIMITS = {
   },
   microlight: {
     name: 'Microlight',
-    icon: '🪂',
+    icon: '🛫',
     description: 'Microlights, ultralights, and flex-wing aircraft',
     windGood: 12,        // Very sensitive to wind
     windMarginal: 18,    // Max safe wind for most microlights
@@ -150,26 +150,27 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
       <style jsx>{`
         .minimums-panel {
           margin: 1.5rem 0;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
+          border: 1px solid rgba(0, 0, 0, 0.06);
+          border-radius: 16px;
           overflow: hidden;
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
         }
         .minimums-toggle {
           width: 100%;
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          padding: 1rem;
-          background: #f8f9fa;
+          gap: 0.875rem;
+          padding: 1rem 1.25rem;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
           border: none;
           cursor: pointer;
-          font-size: 1rem;
+          font-size: 0.9375rem;
           font-weight: 600;
-          color: #333;
-          transition: background 0.2s;
+          color: #1e293b;
+          transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
         }
         .minimums-toggle:hover {
-          background: #e9ecef;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%);
         }
         .minimums-toggle-icon {
           font-size: 1.5rem;
@@ -179,55 +180,60 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
           text-align: left;
         }
         .minimums-toggle-arrow {
-          color: #666;
+          color: #6366f1;
           font-size: 0.75rem;
+          font-weight: 700;
         }
         .minimums-content {
-          padding: 1rem;
-          background: white;
+          padding: 1.25rem;
+          background: rgba(255, 255, 255, 0.6);
         }
         .minimums-description {
           font-size: 0.875rem;
-          color: #666;
+          color: #64748b;
           margin-bottom: 1rem;
           font-style: italic;
         }
         .minimums-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 0.875rem;
+          font-size: 0.8125rem;
           margin-bottom: 1rem;
         }
         .minimums-table th,
         .minimums-table td {
-          padding: 0.625rem 0.5rem;
+          padding: 0.75rem 0.625rem;
           text-align: left;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         }
         .minimums-table th {
-          background: #f8f9fa;
-          font-weight: 600;
-          color: #333;
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+          font-weight: 700;
+          color: #1e293b;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
         .minimums-table td.good {
           color: #059669;
-          font-weight: 500;
+          font-weight: 600;
         }
         .minimums-table td.marginal {
           color: #d97706;
-          font-weight: 500;
+          font-weight: 600;
         }
         .minimums-table td.poor {
           color: #dc2626;
-          font-weight: 500;
+          font-weight: 600;
         }
         .minimums-disclaimer {
           font-size: 0.75rem;
-          color: #666;
-          background: #fffbeb;
-          padding: 0.75rem;
-          border-radius: 4px;
+          color: #64748b;
+          background: linear-gradient(135deg, rgba(254, 243, 199, 0.6) 0%, rgba(253, 230, 138, 0.4) 100%);
+          padding: 0.875rem;
+          border-radius: 10px;
           margin: 0;
+          line-height: 1.5;
         }
         @media (max-width: 640px) {
           .minimums-table {
@@ -534,11 +540,16 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
       </div>
       <style jsx>{`
         .flight-decision {
-          background: white;
-          border-radius: 16px;
-          padding: 2rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          margin-top: 2rem;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-radius: 24px;
+          padding: 1.5rem;
+          box-shadow: 
+            0 4px 30px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          margin-bottom: 1.25rem;
         }
         .decision-header {
           display: flex;
@@ -549,149 +560,181 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
           flex-wrap: wrap;
         }
         .decision-header h2 {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #333;
+          font-size: 1.375rem;
+          font-weight: 800;
+          color: #1e293b;
           margin: 0;
+          letter-spacing: -0.02em;
         }
         .aircraft-type-badge {
           display: inline-flex;
           align-items: center;
-          padding: 0.375rem 0.75rem;
-          background: #667eea;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
           color: white;
-          border-radius: 20px;
+          border-radius: 9999px;
           font-size: 0.875rem;
           font-weight: 600;
+          box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
         }
         .decision-status {
           display: flex;
           align-items: center;
-          gap: 1.5rem;
-          padding: 1.5rem;
-          border-radius: 12px;
+          gap: 1.25rem;
+          padding: 1.25rem;
+          border-radius: 16px;
           border: 2px solid;
           margin-bottom: 1.5rem;
+          position: relative;
+          overflow: hidden;
+        }
+        .decision-status::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          opacity: 0.05;
+          pointer-events: none;
         }
         .decision-emoji {
-          font-size: 3rem;
+          font-size: 2.5rem;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
         }
         .decision-text {
           flex: 1;
         }
         .decision-title {
-          font-size: 1.5rem;
+          font-size: 1.25rem;
           font-weight: 700;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.375rem;
+          color: #1e293b;
         }
         .decision-message {
-          font-size: 1rem;
-          color: #666;
+          font-size: 0.9rem;
+          color: #64748b;
+          line-height: 1.5;
         }
         .decision-reasoning {
-          background: #f9fafb;
-          padding: 1.5rem;
-          border-radius: 12px;
-          margin-bottom: 2rem;
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
+          padding: 1.25rem;
+          border-radius: 16px;
+          margin-bottom: 1.5rem;
           border-left: 4px solid;
         }
         .decision-reasoning h3 {
-          font-size: 1.125rem;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 0.75rem;
+          font-size: 1rem;
+          font-weight: 700;
+          color: #1e293b;
+          margin-bottom: 0.625rem;
         }
         .decision-reasoning p {
-          color: #666;
+          color: #64748b;
           line-height: 1.6;
+          font-size: 0.9rem;
         }
         .criteria-explanation {
-          margin-top: 2rem;
+          margin-top: 1.5rem;
         }
         .criteria-explanation h3 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 0.5rem;
+          font-size: 1.125rem;
+          font-weight: 700;
+          color: #1e293b;
+          margin-bottom: 0.625rem;
         }
         .explanation-intro {
-          color: #666;
+          color: #64748b;
           font-size: 0.875rem;
           margin-bottom: 1.5rem;
           padding-bottom: 1rem;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         }
         .decision-criteria {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 1rem;
         }
         .criterion-detailed {
-          background: #f9fafb;
-          border-radius: 12px;
-          padding: 1.5rem;
-          border: 2px solid #e5e7eb;
-          transition: border-color 0.2s, box-shadow 0.2s;
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+          border-radius: 16px;
+          padding: 1.25rem;
+          border: 1px solid rgba(0, 0, 0, 0.04);
+          transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
         }
-        .criterion-detailed:hover {
-          border-color: #667eea;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        .criterion-detailed::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+          opacity: 0;
+          transition: opacity 150ms;
+        }
+        .criterion-detailed:hover::before {
+          opacity: 1;
         }
         .criterion-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 1rem;
+          margin-bottom: 0.875rem;
         }
         .criterion-label {
-          font-size: 1rem;
-          font-weight: 600;
-          color: #333;
+          font-size: 0.8125rem;
+          font-weight: 700;
+          color: #1e293b;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.06em;
         }
         .criterion-status {
-          font-size: 0.875rem;
-          font-weight: 600;
-          padding: 0.25rem 0.75rem;
-          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 0.375rem 0.875rem;
+          border-radius: 9999px;
         }
         .criterion-status.good {
-          background: #d1fae5;
+          background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
           color: #065f46;
         }
         .criterion-status.marginal {
-          background: #fef3c7;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
           color: #92400e;
         }
         .criterion-status.poor {
-          background: #fee2e2;
+          background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
           color: #991b1b;
         }
         .criterion-value-large {
-          font-size: 1.75rem;
-          font-weight: 700;
-          color: #333;
-          margin-bottom: 0.75rem;
+          font-size: 1.625rem;
+          font-weight: 800;
+          color: #1e293b;
+          margin-bottom: 0.625rem;
+          letter-spacing: -0.02em;
         }
         .criterion-value-secondary {
           display: block;
-          font-size: 1rem;
+          font-size: 0.9rem;
           font-weight: 500;
-          color: #666;
+          color: #64748b;
           margin-top: 0.25rem;
         }
         .criterion-threshold {
-          font-size: 0.875rem;
-          color: #666;
-          margin-bottom: 0.5rem;
+          font-size: 0.8125rem;
+          color: #64748b;
+          margin-bottom: 0.375rem;
         }
         .criterion-threshold strong {
-          color: #333;
+          color: #1e293b;
         }
         .criterion-explanation-text {
-          font-size: 0.875rem;
-          color: #666;
+          font-size: 0.8125rem;
+          color: #64748b;
           line-height: 1.5;
           padding-top: 0.75rem;
           border-top: 1px solid #e5e7eb;

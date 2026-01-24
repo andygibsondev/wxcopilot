@@ -100,20 +100,26 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
         </div>
         <style jsx>{`
           .metar-taf-panel {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 
+              0 4px 30px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 1.25rem;
           }
           .panel-header h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 1.5rem;
+            font-size: 1.375rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.02em;
           }
           .panel-content {
-            color: #666;
+            color: #64748b;
           }
           .no-icao {
             text-align: center;
@@ -121,7 +127,7 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
           }
           .note {
             font-size: 0.875rem;
-            color: #999;
+            color: #94a3b8;
             margin-top: 0.5rem;
           }
         `}</style>
@@ -296,97 +302,107 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
 
       <style jsx>{`
         .metar-taf-panel {
-          background: white;
-          border-radius: 16px;
-          padding: 2rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          margin-top: 2rem;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-radius: 24px;
+          padding: 1.5rem;
+          box-shadow: 
+            0 4px 30px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          margin-bottom: 1.25rem;
         }
         .panel-header h2 {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #333;
+          font-size: 1.375rem;
+          font-weight: 800;
+          color: #1e293b;
           margin-bottom: 0.5rem;
+          letter-spacing: -0.02em;
         }
         .subtitle {
-          color: #666;
+          color: #64748b;
           font-size: 0.875rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
+          font-weight: 500;
         }
         .loading {
           text-align: center;
           padding: 2rem;
-          color: #666;
+          color: #64748b;
         }
         .error-message {
-          background: #fee2e2;
+          background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
           color: #991b1b;
           padding: 1rem;
-          border-radius: 8px;
-          border: 1px solid #fecaca;
+          border-radius: 12px;
+          border: 1px solid rgba(239, 68, 68, 0.2);
         }
         .panel-content {
           display: flex;
           flex-direction: column;
-          gap: 2rem;
+          gap: 1.5rem;
         }
         .metar-section,
         .taf-section {
-          border-top: 2px solid #e5e7eb;
-          padding-top: 1.5rem;
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
+          padding-top: 1.25rem;
         }
         .metar-section:first-child {
           border-top: none;
           padding-top: 0;
         }
         h3 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #333;
+          font-size: 1.125rem;
+          font-weight: 700;
+          color: #1e293b;
           margin-bottom: 1rem;
         }
         .raw-data {
-          background: #f9fafb;
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
           padding: 1rem;
-          border-radius: 8px;
+          border-radius: 12px;
           margin-bottom: 1rem;
-          border-left: 4px solid #667eea;
+          border-left: 4px solid #6366f1;
         }
         .raw-data strong {
           display: block;
           margin-bottom: 0.5rem;
-          color: #333;
-          font-size: 0.875rem;
+          color: #1e293b;
+          font-size: 0.75rem;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.06em;
         }
         code {
-          font-family: 'Courier New', monospace;
-          font-size: 0.875rem;
-          color: #667eea;
+          font-family: 'SF Mono', 'Fira Code', monospace;
+          font-size: 0.8125rem;
+          color: #6366f1;
           word-break: break-all;
           display: block;
+          line-height: 1.5;
         }
         .data-item {
           display: flex;
           flex-wrap: wrap;
           gap: 0.5rem;
-          padding: 0.5rem 0;
-          border-bottom: 1px solid #f3f4f6;
+          padding: 0.625rem 0;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.04);
         }
         .data-item:last-child {
           border-bottom: none;
         }
         .label {
           font-weight: 600;
-          color: #666;
+          color: #64748b;
           min-width: 120px;
+          font-size: 0.875rem;
         }
         .value {
-          color: #333;
+          color: #1e293b;
+          font-weight: 500;
         }
         .no-data {
-          color: #999;
+          color: #94a3b8;
           font-style: italic;
           padding: 1rem;
         }
@@ -416,13 +432,18 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
         }
         @media (max-width: 640px) {
           .metar-taf-panel {
-            padding: 1.5rem;
+            padding: 1.25rem;
           }
           .data-item {
             flex-direction: column;
           }
           .label {
             min-width: auto;
+          }
+        }
+        @media (min-width: 768px) {
+          .metar-taf-panel {
+            padding: 2rem;
           }
         }
       `}</style>

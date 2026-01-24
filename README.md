@@ -1,6 +1,6 @@
-# Aerodrome Weather
+# WxCopilot
 
-A Next.js application that provides aviation weather information for UK aerodromes, helping pilots make informed flight decisions.
+Your aviation weather copilot — a Next.js application that provides aviation weather information for UK aerodromes, helping pilots make informed flight decisions.
 
 ## Features
 
@@ -54,7 +54,7 @@ The flight decision component evaluates weather conditions based on:
 ## Project Structure
 
 ```
-weatherAirfield/
+wxcopilot/
 ├── app/
 │   ├── api/
 │   │   └── weather/

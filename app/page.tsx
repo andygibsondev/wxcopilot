@@ -37,7 +37,7 @@ export type AircraftType = 'light' | 'microlight' | 'jet';
 const AIRCRAFT_OPTIONS: { value: AircraftType; label: string; icon: string }[] = [
   { value: 'jet', label: 'Big Jet', icon: '✈️' },
   { value: 'light', label: 'Light Aircraft', icon: '🛩️' },
-  { value: 'microlight', label: 'Microlight', icon: '🪂' },
+  { value: 'microlight', label: 'Microlight', icon: '🛫' },
 ];
 
 export default function Home() {
@@ -48,6 +48,7 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [selectedHour, setSelectedHour] = useState<number>(12); // Default to noon
   const [aircraftType, setAircraftType] = useState<AircraftType>('light');
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
 
   // Compute plannedFlightTime from day/hour selection
   const plannedFlightTime = selectedDay !== null ? (() => {
@@ -105,6 +106,7 @@ export default function Home() {
         throw new Error('Invalid weather data received from API');
       }
       setWeatherData(data);
+      setIsPanelCollapsed(true); // Collapse panel after successful fetch
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
@@ -202,97 +204,125 @@ export default function Home() {
   return (
     <div className="container">
       <header className="header">
-        <h1>✈️ Aerodrome Weather</h1>
+        <h1>✈️ WxCopilot</h1>
         <p className="subtitle">Aviation weather information for UK aerodromes</p>
       </header>
 
-      <div className="aerodrome-selector">
-        <div className="selector-row">
-          <div className="selector-group">
-            <label htmlFor="aerodrome-select">Select Aerodrome:</label>
-            <select
-              id="aerodrome-select"
-              value={selectedAerodrome.name}
-              onChange={(e) => {
-                const aerodrome = UK_AERODROMES.find((a) => a.name === e.target.value);
-                if (aerodrome) setSelectedAerodrome(aerodrome);
-              }}
-              disabled={loading}
-            >
-              {UK_AERODROMES.map((aerodrome) => (
-                <option key={aerodrome.name} value={aerodrome.name}>
-                  {aerodrome.name} {aerodrome.icao && `(${aerodrome.icao})`}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="selector-group day-hour-picker">
-            <label>Planned Flight Time (Optional):</label>
-            <div className="day-hour-controls">
-              <select
-                id="flight-day"
-                value={selectedDay ?? ''}
-                onChange={(e) => setSelectedDay(e.target.value === '' ? null : Number(e.target.value))}
-                disabled={loading}
-              >
-                <option value="">Now</option>
-                {getDayOptions().map((day) => (
-                  <option key={day.value} value={day.value}>
-                    {day.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                id="flight-hour"
-                value={selectedHour}
-                onChange={(e) => setSelectedHour(Number(e.target.value))}
-                disabled={loading || selectedDay === null}
-                className={selectedDay === null ? 'disabled-select' : ''}
-              >
-                {getHourOptions().map((hour) => (
-                  <option key={hour.value} value={hour.value}>
-                    {hour.label}
-                  </option>
-                ))}
-              </select>
-              {selectedDay !== null && (
-                <button
-                  onClick={() => {
-                    setSelectedDay(null);
-                    setSelectedHour(12);
-                  }}
-                  className="clear-time-btn"
-                  disabled={loading}
-                  title="Clear planned flight time"
-                >
-                  ✕
-                </button>
-              )}
+      <div className={`aerodrome-selector ${isPanelCollapsed ? 'collapsed' : ''}`}>
+        {/* Collapsed Summary Header */}
+        {isPanelCollapsed && weatherData && (
+          <button 
+            className="collapsed-header"
+            onClick={() => setIsPanelCollapsed(false)}
+          >
+            <div className="collapsed-info">
+              <span className="collapsed-aerodrome">
+                📍 {selectedAerodrome.name}
+                {selectedAerodrome.icao && <span className="collapsed-icao">({selectedAerodrome.icao})</span>}
+              </span>
+              <span className="collapsed-details">
+                {AIRCRAFT_OPTIONS.find(a => a.value === aircraftType)?.icon}{' '}
+                {selectedDay !== null 
+                  ? `${getDayOptions()[selectedDay]?.label} ${String(selectedHour).padStart(2, '0')}:00`
+                  : 'Now'
+                }
+              </span>
             </div>
-          </div>
-        </div>
+            <span className="expand-icon">▼ Change</span>
+          </button>
+        )}
 
-        <div className="aircraft-selector">
-          <label>Aircraft Type:</label>
-          <div className="aircraft-buttons">
-            {AIRCRAFT_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setAircraftType(option.value)}
-                className={`aircraft-btn ${aircraftType === option.value ? 'active' : ''}`}
-                disabled={loading}
-              >
-                <span className="aircraft-icon">{option.icon}</span>
-                <span className="aircraft-label">{option.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        
-        <button onClick={fetchWeather} disabled={loading} className="refresh-btn">
-          {loading ? 'Loading...' : '🔄 Refresh'}
-        </button>
+        {/* Expanded Panel Content */}
+        {!isPanelCollapsed && (
+          <>
+            <div className="selector-row">
+              <div className="selector-group">
+                <label htmlFor="aerodrome-select">Select Aerodrome:</label>
+                <select
+                  id="aerodrome-select"
+                  value={selectedAerodrome.name}
+                  onChange={(e) => {
+                    const aerodrome = UK_AERODROMES.find((a) => a.name === e.target.value);
+                    if (aerodrome) setSelectedAerodrome(aerodrome);
+                  }}
+                  disabled={loading}
+                >
+                  {UK_AERODROMES.map((aerodrome) => (
+                    <option key={aerodrome.name} value={aerodrome.name}>
+                      {aerodrome.name} {aerodrome.icao && `(${aerodrome.icao})`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="selector-group day-hour-picker">
+                <label>Planned Flight Time (Optional):</label>
+                <div className="day-hour-controls">
+                  <select
+                    id="flight-day"
+                    value={selectedDay ?? ''}
+                    onChange={(e) => setSelectedDay(e.target.value === '' ? null : Number(e.target.value))}
+                    disabled={loading}
+                  >
+                    <option value="">Now</option>
+                    {getDayOptions().map((day) => (
+                      <option key={day.value} value={day.value}>
+                        {day.label}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    id="flight-hour"
+                    value={selectedHour}
+                    onChange={(e) => setSelectedHour(Number(e.target.value))}
+                    disabled={loading || selectedDay === null}
+                    className={selectedDay === null ? 'disabled-select' : ''}
+                  >
+                    {getHourOptions().map((hour) => (
+                      <option key={hour.value} value={hour.value}>
+                        {hour.label}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedDay !== null && (
+                    <button
+                      onClick={() => {
+                        setSelectedDay(null);
+                        setSelectedHour(12);
+                      }}
+                      className="clear-time-btn"
+                      disabled={loading}
+                      title="Clear planned flight time"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="aircraft-selector">
+              <label>Aircraft Type:</label>
+              <div className="aircraft-buttons">
+                {AIRCRAFT_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setAircraftType(option.value)}
+                    className={`aircraft-btn ${aircraftType === option.value ? 'active' : ''}`}
+                    disabled={loading}
+                  >
+                    <span className="aircraft-icon">{option.icon}</span>
+                    <span className="aircraft-label">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <button onClick={fetchWeather} disabled={loading} className="refresh-btn">
+              {loading ? 'Loading...' : '🔄 Get Weather'}
+            </button>
+          </>
+        )}
       </div>
 
       {error && (
@@ -315,6 +345,10 @@ export default function Home() {
             precipitation={currentPrecipitation}
             aircraftType={aircraftType}
           />
+
+          <section className="weather-section">
+            <h2>{isPlannedTime ? '📅 Forecast Conditions' : '🌤️ Current Conditions'}</h2>
+          </section>
 
           <div className="weather-overview">
             <div className="location-info">
@@ -463,181 +497,272 @@ export default function Home() {
       )}
 
       <style jsx>{`
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 1rem;
-        }
-
+        /* ========================================
+           MODERN GLASSMORPHISM DESIGN
+           ======================================== */
+        
         .header {
           text-align: center;
-          color: white;
-          margin-bottom: 2rem;
-          padding: 2rem 0;
+          color: var(--color-text-light, #f8fafc);
+          margin-bottom: 1.5rem;
+          padding: 1.5rem 0;
         }
 
         .header h1 {
-          font-size: 2.5rem;
-          font-weight: 700;
+          font-size: 2rem;
+          font-weight: 800;
           margin-bottom: 0.5rem;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+          background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          letter-spacing: -0.02em;
         }
 
         .subtitle {
-          font-size: 1.125rem;
-          opacity: 0.9;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          font-weight: 500;
         }
 
+        /* Glassmorphism card */
         .aerodrome-selector {
-          background: white;
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin-bottom: 2rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-radius: var(--radius-xl, 24px);
+          padding: 1.25rem;
+          margin-bottom: 1.25rem;
+          box-shadow: 
+            0 4px 30px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 1.25rem;
+          transition: all var(--transition-slow, 300ms) ease;
+        }
+
+        /* Collapsed state */
+        .aerodrome-selector.collapsed {
+          padding: 0;
+          gap: 0;
+        }
+
+        .collapsed-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding: 1.25rem;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: none;
+          border-radius: var(--radius-xl, 24px);
+          cursor: pointer;
+          transition: all var(--transition-base, 200ms);
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .collapsed-header:active {
+          background: rgba(248, 250, 252, 0.95);
+          transform: scale(0.99);
+        }
+
+        .collapsed-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.375rem;
+        }
+
+        .collapsed-aerodrome {
+          font-size: 1.0625rem;
+          font-weight: 700;
+          color: var(--color-text, #1e293b);
+        }
+
+        .collapsed-icao {
+          font-weight: 600;
+          color: var(--color-primary, #6366f1);
+          margin-left: 0.5rem;
+        }
+
+        .collapsed-details {
+          font-size: 0.875rem;
+          color: var(--color-text-muted, #64748b);
+          font-weight: 500;
+        }
+
+        .expand-icon {
+          font-size: 0.8125rem;
+          font-weight: 600;
+          color: var(--color-primary, #6366f1);
+          padding: 0.625rem 1rem;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+          border-radius: var(--radius-full, 9999px);
+          white-space: nowrap;
+          transition: all var(--transition-fast, 150ms);
         }
 
         .selector-row {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
         }
 
         .selector-group {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.625rem;
+          position: relative;
         }
 
         .selector-group label {
           font-weight: 600;
-          color: #333;
-          font-size: 0.875rem;
+          color: var(--color-text-muted, #64748b);
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
         }
 
+        /* Modern selects */
         .aerodrome-selector select {
-          padding: 0.75rem;
-          border: 2px solid #e5e7eb;
-          border-radius: 8px;
+          padding: 1rem 1.25rem;
+          border: 2px solid rgba(0, 0, 0, 0.08);
+          border-radius: var(--radius-lg, 16px);
           font-size: 1rem;
-          background: white;
+          font-weight: 500;
+          background: rgba(248, 250, 252, 0.8);
+          color: var(--color-text, #1e293b);
           cursor: pointer;
-          transition: border-color 0.2s;
+          transition: all var(--transition-fast, 150ms);
           width: 100%;
-        }
-
-        .aerodrome-selector select:hover {
-          border-color: #667eea;
+          -webkit-appearance: none;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 1.25rem center;
+          padding-right: 3rem;
         }
 
         .aerodrome-selector select:focus {
           outline: none;
-          border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+          border-color: var(--color-primary, #6366f1);
+          background: white;
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
         }
 
-        .selector-group {
-          position: relative;
-        }
-
+        /* Day/hour picker */
         .day-hour-picker .day-hour-controls {
           display: flex;
-          gap: 0.5rem;
+          gap: 0.625rem;
           align-items: center;
         }
 
         .day-hour-picker select {
           flex: 1;
-          min-width: 100px;
+          min-width: 0;
         }
 
         .day-hour-picker select:first-child {
-          flex: 2;
+          flex: 1.5;
         }
 
         .day-hour-picker .disabled-select {
-          opacity: 0.5;
+          opacity: 0.4;
           cursor: not-allowed;
         }
 
         .clear-time-btn {
-          background: #ef4444;
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
           color: white;
           border: none;
-          border-radius: 50%;
-          width: 28px;
-          height: 28px;
+          border-radius: var(--radius-full, 9999px);
+          width: 44px;
+          height: 44px;
+          min-height: 44px;
           flex-shrink: 0;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.875rem;
-          transition: background 0.2s;
+          font-size: 1rem;
+          font-weight: bold;
+          transition: all var(--transition-fast, 150ms);
+          -webkit-tap-highlight-color: transparent;
+          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
         }
 
-        .clear-time-btn:hover:not(:disabled) {
-          background: #dc2626;
+        .clear-time-btn:active {
+          transform: scale(0.92);
         }
 
         .clear-time-btn:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
+
         .timezone-note {
           display: block;
           font-size: 0.75rem;
-          color: #666;
+          color: var(--color-text-muted, #64748b);
           margin-top: 0.25rem;
           font-style: italic;
         }
 
+        /* Aircraft type buttons */
         .aircraft-selector {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
-          padding-top: 1rem;
-          border-top: 1px solid #e5e7eb;
+          gap: 1rem;
+          padding-top: 1.25rem;
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
         }
 
         .aircraft-selector label {
           font-weight: 600;
-          color: #333;
-          font-size: 0.875rem;
+          color: var(--color-text-muted, #64748b);
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
         }
 
         .aircraft-buttons {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.625rem;
         }
 
         .aircraft-btn {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          padding: 0.625rem 1rem;
-          border: 2px solid #e5e7eb;
-          border-radius: 8px;
-          background: white;
+          justify-content: center;
+          gap: 0.75rem;
+          padding: 1rem 1.25rem;
+          border: 2px solid rgba(0, 0, 0, 0.06);
+          border-radius: var(--radius-lg, 16px);
+          background: rgba(248, 250, 252, 0.8);
           cursor: pointer;
-          transition: all 0.2s;
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: #555;
+          transition: all var(--transition-fast, 150ms);
+          font-size: 1rem;
+          font-weight: 600;
+          color: var(--color-text, #1e293b);
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .aircraft-btn:hover:not(:disabled) {
-          border-color: #667eea;
-          background: #f8f9ff;
+        .aircraft-btn:active:not(:disabled) {
+          transform: scale(0.97);
         }
 
         .aircraft-btn.active {
-          border-color: #667eea;
-          background: #667eea;
+          border-color: transparent;
+          background: linear-gradient(135deg, var(--color-primary, #6366f1) 0%, var(--color-secondary, #8b5cf6) 100%);
           color: white;
+          box-shadow: 
+            0 4px 15px rgba(99, 102, 241, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .aircraft-btn:disabled {
@@ -646,36 +771,32 @@ export default function Home() {
         }
 
         .aircraft-icon {
-          font-size: 1.25rem;
+          font-size: 1.625rem;
         }
 
         .aircraft-label {
           white-space: nowrap;
         }
 
-        @media (max-width: 640px) {
-          .aircraft-buttons {
-            flex-direction: column;
-          }
-          .aircraft-btn {
-            justify-content: center;
-          }
-        }
-
+        /* Refresh button */
         .refresh-btn {
-          padding: 0.75rem 1.5rem;
-          background: #667eea;
+          width: 100%;
+          padding: 1.125rem 1.5rem;
+          background: linear-gradient(135deg, var(--color-primary, #6366f1) 0%, var(--color-secondary, #8b5cf6) 100%);
           color: white;
           border: none;
-          border-radius: 8px;
-          font-size: 1rem;
-          font-weight: 600;
+          border-radius: var(--radius-lg, 16px);
+          font-size: 1.125rem;
+          font-weight: 700;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: all 0.2s;
+          -webkit-tap-highlight-color: transparent;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
-        .refresh-btn:hover:not(:disabled) {
-          background: #5568d3;
+        .refresh-btn:active:not(:disabled) {
+          transform: scale(0.98);
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
 
         .refresh-btn:disabled {
@@ -683,69 +804,149 @@ export default function Home() {
           cursor: not-allowed;
         }
 
+        /* ========================================
+           TABLET BREAKPOINT (768px+)
+           ======================================== */
+        @media (min-width: 768px) {
+          .header {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem 0;
+          }
+
+          .header h1 {
+            font-size: 2.25rem;
+          }
+
+          .subtitle {
+            font-size: 1rem;
+          }
+
+          .aerodrome-selector {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+          }
+
+          .selector-row {
+            flex-direction: row;
+            gap: 1.5rem;
+          }
+
+          .selector-group {
+            flex: 1;
+          }
+
+          .aircraft-buttons {
+            grid-template-columns: repeat(3, 1fr);
+          }
+
+          .refresh-btn {
+            width: auto;
+            align-self: flex-start;
+          }
+        }
+
+        /* ========================================
+           DESKTOP BREAKPOINT (1024px+)
+           ======================================== */
+        @media (min-width: 1024px) {
+          .header h1 {
+            font-size: 2.5rem;
+          }
+
+          .aerodrome-selector {
+            padding: 2rem;
+          }
+        }
+
+        /* ========================================
+           ERROR & LOADING STATES
+           ======================================== */
         .error-message {
           background: #fee2e2;
           color: #991b1b;
           padding: 1rem;
-          border-radius: 8px;
-          margin-bottom: 2rem;
+          border-radius: 12px;
+          margin-bottom: 1rem;
           border: 1px solid #fecaca;
+          font-size: 0.875rem;
         }
 
         .loading {
           text-align: center;
-          padding: 3rem;
+          padding: 3rem 1rem;
           color: white;
-          font-size: 1.25rem;
+          font-size: 1.125rem;
         }
 
+        /* ========================================
+           WEATHER OVERVIEW CARD
+           ======================================== */
         .weather-overview {
-          background: white;
-          border-radius: 16px;
-          padding: 2rem;
-          margin-bottom: 2rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-radius: var(--radius-xl, 24px);
+          padding: 1.25rem;
+          margin-bottom: 1.25rem;
+          box-shadow: 
+            0 4px 30px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .location-info {
           text-align: center;
-          margin-bottom: 2rem;
-          padding-bottom: 2rem;
-          border-bottom: 2px solid #e5e7eb;
+          margin-bottom: 1.25rem;
+          padding-bottom: 1.25rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         }
 
         .location-info h2 {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #333;
-          margin-bottom: 0.5rem;
+          font-size: 1.625rem;
+          font-weight: 800;
+          color: var(--color-text, #1e293b);
+          margin-bottom: 0.375rem;
+          letter-spacing: -0.02em;
         }
 
         .icao-code {
-          font-size: 1.25rem;
-          color: #667eea;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
+          font-size: 1rem;
+          color: var(--color-primary, #6366f1);
+          font-weight: 700;
+          margin-bottom: 0.625rem;
+          letter-spacing: 0.05em;
         }
 
         .timestamp {
-          font-size: 0.875rem;
-          color: #666;
+          font-size: 0.8125rem;
+          color: var(--color-text-muted, #64748b);
+          line-height: 1.6;
         }
 
         .forecast-note {
           font-size: 0.75rem;
-          color: #f59e0b;
+          color: var(--color-warning, #f59e0b);
           font-weight: 600;
+        }
+
+        .forecast-warning-note {
+          color: #dc2626;
+          font-weight: 500;
+        }
+
+        .forecast-accurate-note {
+          color: #059669;
+          font-weight: 500;
         }
 
         .forecast-warning {
           background: #fef3c7;
           border: 2px solid #f59e0b;
-          border-radius: 8px;
-          padding: 1rem;
+          border-radius: 12px;
+          padding: 0.875rem;
           margin-top: 1rem;
           color: #92400e;
+          font-size: 0.875rem;
         }
 
         .forecast-warning strong {
@@ -753,32 +954,67 @@ export default function Home() {
           margin-bottom: 0.25rem;
         }
 
+        /* Weather cards grid - 2 columns on mobile */
         .main-weather {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 1rem;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
         }
 
+        /* ========================================
+           WEATHER SECTIONS
+           ======================================== */
         .weather-section {
-          margin-bottom: 2rem;
+          margin-bottom: 1.25rem;
         }
 
         .weather-section h2 {
-          font-size: 1.5rem;
+          font-size: 1.125rem;
           font-weight: 700;
-          color: white;
+          color: rgba(255, 255, 255, 0.95);
           margin-bottom: 1rem;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
 
+        .weather-section h2::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+          margin-left: 0.5rem;
+        }
+
+        /* ========================================
+           TABLET STYLES FOR WEATHER
+           ======================================== */
         @media (min-width: 768px) {
-          .selector-row {
-            grid-template-columns: 1fr 1fr;
-            align-items: end;
+          .weather-overview {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
           }
 
-          .header h1 {
-            font-size: 3rem;
+          .location-info {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+          }
+
+          .location-info h2 {
+            font-size: 1.75rem;
+          }
+
+          .main-weather {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+          }
+
+          .weather-section {
+            margin-bottom: 1.5rem;
+          }
+
+          .weather-section h2 {
+            font-size: 1.375rem;
           }
         }
       `}</style>

@@ -73,38 +73,55 @@ export const CloudBaseDisplay: React.FC<CloudBaseDisplayProps> = ({
       <style jsx>{`
         .cloud-display {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 1rem;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 0.875rem;
         }
         .cloud-details {
           grid-column: 1 / -1;
-          background: white;
-          border-radius: 12px;
-          padding: 1rem;
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+          border-radius: 16px;
+          padding: 1.25rem;
           display: flex;
           justify-content: space-around;
           gap: 1rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          border: 1px solid rgba(0, 0, 0, 0.04);
         }
         .cloud-detail-item {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.25rem;
+          gap: 0.375rem;
         }
         .cloud-detail-item span {
-          font-size: 0.75rem;
-          color: #666;
+          font-size: 0.6875rem;
+          color: #64748b;
           text-transform: uppercase;
+          font-weight: 600;
+          letter-spacing: 0.06em;
         }
         .cloud-detail-item strong {
-          font-size: 1.25rem;
-          color: #333;
+          font-size: 1.375rem;
+          font-weight: 800;
+          color: #1e293b;
+          letter-spacing: -0.02em;
         }
         @media (max-width: 640px) {
           .cloud-details {
-            flex-direction: column;
-            gap: 0.5rem;
+            flex-direction: row;
+            gap: 0.75rem;
+            padding: 1rem;
+          }
+        }
+        @media (min-width: 768px) {
+          .cloud-display {
+            gap: 1rem;
+          }
+          .cloud-details {
+            border-radius: 20px;
+            padding: 1.5rem;
+          }
+          .cloud-detail-item strong {
+            font-size: 1.5rem;
           }
         }
       `}</style>
