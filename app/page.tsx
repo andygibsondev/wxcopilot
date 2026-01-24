@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { WeatherData } from '@/types/weather';
 import { UK_AERODROMES } from '@/data/aerodromes';
@@ -63,6 +63,16 @@ export default function Home() {
   const [defaultsSaved, setDefaultsSaved] = useState(false);
   const [shouldAutoFetch, setShouldAutoFetch] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [activePanel, setActivePanel] = useState(0);
+  const swipeContainerRef = useRef<HTMLDivElement>(null);
+
+  const PANELS = [
+    { id: 'decision', label: 'Decision', icon: '✈️' },
+    { id: 'conditions', label: 'Conditions', icon: '🌤️' },
+    { id: 'wind', label: 'Wind', icon: '💨' },
+    { id: 'clouds', label: 'Clouds', icon: '☁️' },
+    { id: 'metar', label: 'METAR/TAF', icon: '📋' },
+  ];
 
   // Load saved preferences from localStorage
   useEffect(() => {
@@ -126,14 +136,36 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Scroll to section and close menu
+  // Scroll to panel by index
+  const scrollToPanel = (index: number) => {
+    if (swipeContainerRef.current) {
+      const panelWidth = swipeContainerRef.current.offsetWidth;
+      swipeContainerRef.current.scrollTo({
+        left: index * panelWidth,
+        behavior: 'smooth'
+      });
+    }
+    setActivePanel(index);
+    setIsMenuOpen(false);
+  };
+
+  // Handle scroll event to update active panel indicator
+  const handleScroll = () => {
+    if (swipeContainerRef.current) {
+      const scrollLeft = swipeContainerRef.current.scrollLeft;
+      const panelWidth = swipeContainerRef.current.offsetWidth;
+      const newIndex = Math.round(scrollLeft / panelWidth);
+      if (newIndex !== activePanel && newIndex >= 0 && newIndex < PANELS.length) {
+        setActivePanel(newIndex);
+      }
+    }
+  };
+
+  // Legacy scroll function for menu (now uses panels)
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const headerOffset = 70;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    const panelIndex = PANELS.findIndex(p => p.id === id);
+    if (panelIndex >= 0) {
+      scrollToPanel(panelIndex);
     }
     setIsMenuOpen(false);
   };
@@ -507,161 +539,136 @@ export default function Home() {
 
       {weatherData && currentWeather && (
         <>
-          <div id="decision-section">
-            <FlightDecision
-              windSpeed={hourly?.windspeed_10m[currentIndex] ?? 0}
-              visibility={currentVisibility}
-              cloudCover={currentCloudCover}
-              cloudBase={cloudBaseFeet}
-              precipitation={currentPrecipitation}
-              aircraftType={aircraftType}
-            />
+          {/* Panel Navigation Tabs */}
+          <div className="panel-tabs">
+            {PANELS.map((panel, index) => (
+              <button
+                key={panel.id}
+                className={`panel-tab ${activePanel === index ? 'active' : ''}`}
+                onClick={() => scrollToPanel(index)}
+              >
+                <span className="tab-icon">{panel.icon}</span>
+                <span className="tab-label">{panel.label}</span>
+              </button>
+            ))}
           </div>
 
-          <section id="conditions-section" className="weather-section">
-            <h2>{isPlannedTime ? '📅 Forecast Conditions' : '🌤️ Current Conditions'}</h2>
-          </section>
-
-          <div className="weather-overview">
-            <div className="location-info">
-              <h2>{selectedAerodrome.name}</h2>
-              {selectedAerodrome.icao && (
-                <p className="icao-code">{selectedAerodrome.icao}</p>
-              )}
-              <p className="timestamp">
-                {isPlannedTime ? (
-                  <>
-                    <strong>Planned Flight Time:</strong>{' '}
-                    {plannedFlightTime ? new Date(plannedFlightTime).toLocaleString('en-GB', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }) : 'N/A'}
-                    <br />
-                    <strong>Forecast Time:</strong>{' '}
-                    {selectedTime ? new Date(selectedTime).toLocaleString('en-GB', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }) : 'N/A'}
-                    <br />
-                    <span className="forecast-note">(Forecast data)</span>
-                    {!isAccurateForecast && timeDifference !== null && timeDifference > 0 && (
-                      <>
-                        <br />
-                        <span className="forecast-warning-note">
-                          ⚠️ Nearest forecast: {timeDifference.toFixed(1)} hours from selected time
-                        </span>
-                      </>
-                    )}
-                    {isAccurateForecast && (
-                      <>
-                        <br />
-                        <span className="forecast-accurate-note">
-                          ✅ Forecast data matches selected time
-                        </span>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <strong>Current Conditions:</strong>{' '}
-                    {new Date(currentWeather.time).toLocaleString('en-GB')}
-                  </>
-                )}
-              </p>
-            </div>
-
-            <div className="main-weather">
-              <WeatherCard
-                title="Temperature"
-                value={Math.round(currentTemperature)}
-                unit="°C"
-                icon="🌡️"
-              />
-              <WeatherCard
-                title="Feels Like"
-                value={Math.round(currentApparentTemp)}
-                unit="°C"
-                icon="🤒"
-              />
-              <WeatherCard
-                title="Visibility"
-                value={(currentVisibility / 1000).toFixed(1)}
-                unit="km"
-                icon="👁️"
-              />
-              <WeatherCard
-                title="Humidity"
-                value={Math.round(currentHumidity)}
-                unit="%"
-                icon="💧"
-              />
-              <WeatherCard
-                title="Dew Point"
-                value={Math.round(currentDewpoint)}
-                unit="°C"
-                icon="💦"
-              />
-              <WeatherCard
-                title="QNH"
-                value={Math.round(currentQNH)}
-                unit="hPa"
-                icon="📊"
-              />
-              <WeatherCard
-                title="Surface Pressure"
-                value={Math.round(currentSurfacePressure)}
-                unit="hPa"
-                icon="⬇️"
-              />
-              <WeatherCard
-                title="Rain Probability"
-                value={Math.round(currentPrecipProb)}
-                unit="%"
-                icon="🌧️"
+          {/* Swipeable Panels Container */}
+          <div 
+            className="swipe-container"
+            ref={swipeContainerRef}
+            onScroll={handleScroll}
+          >
+            {/* Panel 1: Flight Decision */}
+            <div className="swipe-panel" id="panel-decision">
+              <FlightDecision
+                windSpeed={hourly?.windspeed_10m[currentIndex] ?? 0}
+                visibility={currentVisibility}
+                cloudCover={currentCloudCover}
+                cloudBase={cloudBaseFeet}
+                precipitation={currentPrecipitation}
+                aircraftType={aircraftType}
               />
             </div>
-            
-            {isPlannedTime && selectedTime && (
-              <div className="forecast-warning">
-                <strong>⚠️ Forecast Data:</strong> Weather shown is forecast for your planned flight time. 
-                Conditions may change. Always check current METAR/TAF before flight.
+
+            {/* Panel 2: Weather Conditions */}
+            <div className="swipe-panel" id="panel-conditions">
+              <div className="weather-overview">
+                <div className="location-info">
+                  <h2>{selectedAerodrome.name}</h2>
+                  {selectedAerodrome.icao && (
+                    <p className="icao-code">{selectedAerodrome.icao}</p>
+                  )}
+                  <p className="timestamp">
+                    {isPlannedTime ? (
+                      <>
+                        <strong>Planned:</strong>{' '}
+                        {plannedFlightTime ? new Date(plannedFlightTime).toLocaleString('en-GB', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }) : 'N/A'}
+                        {isAccurateForecast && <span className="forecast-accurate-note"> ✅</span>}
+                        {!isAccurateForecast && timeDifference !== null && timeDifference > 0 && (
+                          <span className="forecast-warning-note"> ⚠️ ±{timeDifference.toFixed(1)}h</span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <strong>Now:</strong>{' '}
+                        {new Date(currentWeather.time).toLocaleString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <div className="main-weather">
+                  <WeatherCard title="Temperature" value={Math.round(currentTemperature)} unit="°C" icon="🌡️" />
+                  <WeatherCard title="Feels Like" value={Math.round(currentApparentTemp)} unit="°C" icon="🤒" />
+                  <WeatherCard title="Visibility" value={(currentVisibility / 1000).toFixed(1)} unit="km" icon="👁️" />
+                  <WeatherCard title="Humidity" value={Math.round(currentHumidity)} unit="%" icon="💧" />
+                  <WeatherCard title="Dew Point" value={Math.round(currentDewpoint)} unit="°C" icon="💦" />
+                  <WeatherCard title="QNH" value={Math.round(currentQNH)} unit="hPa" icon="📊" />
+                  <WeatherCard title="Surface Pressure" value={Math.round(currentSurfacePressure)} unit="hPa" icon="⬇️" />
+                  <WeatherCard title="Rain Probability" value={Math.round(currentPrecipProb)} unit="%" icon="🌧️" />
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Panel 3: Wind Conditions */}
+            <div className="swipe-panel" id="panel-wind">
+              <section className="weather-section">
+                <h2>💨 Wind Conditions</h2>
+                <WindDisplay
+                  speed={hourly?.windspeed_10m[currentIndex] ?? 0}
+                  direction={hourly?.winddirection_10m[currentIndex] ?? 0}
+                  gusts={hourly?.windgusts_10m[currentIndex]}
+                />
+              </section>
+            </div>
+
+            {/* Panel 4: Cloud Conditions */}
+            <div className="swipe-panel" id="panel-clouds">
+              <section className="weather-section">
+                <h2>☁️ Cloud Conditions</h2>
+                <CloudBaseDisplay
+                  cloudCover={currentCloudCover}
+                  cloudCoverLow={currentCloudCoverLow}
+                  cloudCoverMid={currentCloudCoverMid}
+                  cloudCoverHigh={currentCloudCoverHigh}
+                  temperature={currentTemperature}
+                  humidity={currentHumidity}
+                />
+              </section>
+            </div>
+
+            {/* Panel 5: METAR/TAF */}
+            <div className="swipe-panel" id="panel-metar">
+              <MetarTafPanel
+                icao={selectedAerodrome.icao}
+                aerodromeName={selectedAerodrome.name}
+              />
+            </div>
           </div>
 
-          <section id="wind-section" className="weather-section">
-            <h2>Wind Conditions</h2>
-            <WindDisplay
-              speed={hourly?.windspeed_10m[currentIndex] ?? 0}
-              direction={hourly?.winddirection_10m[currentIndex] ?? 0}
-              gusts={hourly?.windgusts_10m[currentIndex]}
-            />
-          </section>
-
-          <section id="cloud-section" className="weather-section">
-            <h2>Cloud Conditions</h2>
-            <CloudBaseDisplay
-              cloudCover={currentCloudCover}
-              cloudCoverLow={currentCloudCoverLow}
-              cloudCoverMid={currentCloudCoverMid}
-              cloudCoverHigh={currentCloudCoverHigh}
-              temperature={currentTemperature}
-              humidity={currentHumidity}
-            />
-          </section>
-
-          <div id="metar-section">
-            <MetarTafPanel
-              icao={selectedAerodrome.icao}
-              aerodromeName={selectedAerodrome.name}
-            />
+          {/* Panel Indicators */}
+          <div className="panel-indicators">
+            {PANELS.map((panel, index) => (
+              <button
+                key={panel.id}
+                className={`indicator-dot ${activePanel === index ? 'active' : ''}`}
+                onClick={() => scrollToPanel(index)}
+                aria-label={`Go to ${panel.label}`}
+              />
+            ))}
           </div>
+
+          {/* Swipe hint */}
+          <p className="swipe-hint">← Swipe to navigate →</p>
 
           <DebugPanel
             data={weatherData}
@@ -1210,6 +1217,115 @@ export default function Home() {
         }
 
         /* ========================================
+           SWIPEABLE PANELS
+           ======================================== */
+        .panel-tabs {
+          display: flex;
+          gap: 0.25rem;
+          padding: 0.5rem;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: var(--radius-lg, 16px);
+          margin-bottom: 0.75rem;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+
+        .panel-tabs::-webkit-scrollbar {
+          display: none;
+        }
+
+        .panel-tab {
+          flex: 1;
+          min-width: 60px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.5rem 0.375rem;
+          background: transparent;
+          border: none;
+          border-radius: var(--radius-md, 12px);
+          color: rgba(255, 255, 255, 0.6);
+          cursor: pointer;
+          transition: all 200ms ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .panel-tab.active {
+          background: rgba(255, 255, 255, 0.95);
+          color: var(--color-text, #1e293b);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .tab-icon {
+          font-size: 1.25rem;
+        }
+
+        .tab-label {
+          font-size: 0.625rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+        }
+
+        .swipe-container {
+          display: flex;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          gap: 2rem;
+          margin: 0;
+          padding-left: 0.75rem;
+          padding-right: 0.75rem;
+        }
+
+        .swipe-container::-webkit-scrollbar {
+          display: none;
+        }
+
+        .swipe-panel {
+          flex: 0 0 calc(100% - 1.5rem);
+          width: calc(100% - 1.5rem);
+          scroll-snap-align: center;
+          scroll-snap-stop: always;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        .panel-indicators {
+          display: flex;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: 1rem 0 0.5rem;
+        }
+
+        .indicator-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          transition: all 200ms ease;
+        }
+
+        .indicator-dot.active {
+          width: 24px;
+          border-radius: 4px;
+          background: var(--color-accent, #06b6d4);
+        }
+
+        .swipe-hint {
+          text-align: center;
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.4);
+          margin-bottom: 1rem;
+        }
+
+        /* ========================================
            TABLET STYLES FOR WEATHER
            ======================================== */
         @media (min-width: 768px) {
@@ -1238,6 +1354,26 @@ export default function Home() {
 
           .weather-section h2 {
             font-size: 1.375rem;
+          }
+
+          .panel-tab {
+            flex-direction: row;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+          }
+
+          .tab-label {
+            font-size: 0.75rem;
+          }
+
+          .swipe-container {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+          }
+
+          .swipe-panel {
+            flex: 0 0 calc(100% - 3rem);
+            width: calc(100% - 3rem);
           }
         }
       `}</style>
