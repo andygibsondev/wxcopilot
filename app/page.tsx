@@ -205,8 +205,10 @@ export default function Home() {
     <>
       {/* Fixed header bar at top */}
       <header className="fixed-header">
-        <span className="fixed-header-title">✈️ WxCopilot</span>
-        <span className="fixed-header-subtitle">Your weather copilot for every flight</span>
+        <div className="fixed-header-content">
+          <span className="fixed-header-logo">✈️</span>
+          <span className="fixed-header-title">WxCopilot</span>
+        </div>
       </header>
 
       <div className="container">
@@ -511,32 +513,31 @@ export default function Home() {
           left: 0;
           right: 0;
           z-index: 1000;
-          background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-          border-bottom: 1px solid rgba(99, 102, 241, 0.3);
-          padding: 0.875rem 1rem;
-          padding-top: calc(0.875rem + env(safe-area-inset-top));
+          background: #ffffff;
+          border-bottom: 2px solid #6366f1;
+          padding: 0.75rem 1rem;
+          padding-top: calc(0.75rem + env(safe-area-inset-top));
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 0.75rem;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .fixed-header-content {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .fixed-header-logo {
+          font-size: 1.5rem;
         }
 
         .fixed-header-title {
-          font-size: 1.25rem;
+          font-size: 1.375rem;
           font-weight: 800;
-          color: #fff;
-          letter-spacing: -0.01em;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .fixed-header-subtitle {
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: rgba(255, 255, 255, 0.8);
-          margin-left: 0.75rem;
-          padding-left: 0.75rem;
-          border-left: 1px solid rgba(255, 255, 255, 0.3);
+          color: #1e293b;
+          letter-spacing: -0.02em;
         }
 
         /* Container needs padding-top for fixed header */
@@ -833,11 +834,11 @@ export default function Home() {
           }
 
           .fixed-header-title {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
           }
 
-          .fixed-header-subtitle {
-            font-size: 0.8125rem;
+          .fixed-header-logo {
+            font-size: 1.75rem;
           }
 
           .container {
