@@ -49,6 +49,19 @@ export default function Home() {
   const [selectedHour, setSelectedHour] = useState<number>(12); // Default to noon
   const [aircraftType, setAircraftType] = useState<AircraftType>('light');
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Scroll to section and close menu
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 70;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
 
   // Compute plannedFlightTime from day/hour selection
   const plannedFlightTime = selectedDay !== null ? (() => {
@@ -209,11 +222,52 @@ export default function Home() {
           <span className="fixed-header-logo">✈️</span>
           <span className="fixed-header-title">WxCopilot</span>
         </div>
+        <button 
+          className="hamburger-btn"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Menu"
+        >
+          <span className={`hamburger-line ${isMenuOpen ? 'open' : ''}`}></span>
+          <span className={`hamburger-line ${isMenuOpen ? 'open' : ''}`}></span>
+          <span className={`hamburger-line ${isMenuOpen ? 'open' : ''}`}></span>
+        </button>
       </header>
+
+      {/* Navigation Menu Overlay */}
+      {isMenuOpen && (
+        <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}>
+          <nav className="menu-nav" onClick={(e) => e.stopPropagation()}>
+            <button className="menu-item" onClick={() => scrollToSection('search-section')}>
+              <span className="menu-icon">🔍</span>
+              <span>Search</span>
+            </button>
+            <button className="menu-item" onClick={() => scrollToSection('decision-section')}>
+              <span className="menu-icon">✅</span>
+              <span>Flight Decision</span>
+            </button>
+            <button className="menu-item" onClick={() => scrollToSection('conditions-section')}>
+              <span className="menu-icon">🌤️</span>
+              <span>Conditions</span>
+            </button>
+            <button className="menu-item" onClick={() => scrollToSection('wind-section')}>
+              <span className="menu-icon">💨</span>
+              <span>Wind</span>
+            </button>
+            <button className="menu-item" onClick={() => scrollToSection('cloud-section')}>
+              <span className="menu-icon">☁️</span>
+              <span>Clouds</span>
+            </button>
+            <button className="menu-item" onClick={() => scrollToSection('metar-section')}>
+              <span className="menu-icon">📋</span>
+              <span>METAR/TAF</span>
+            </button>
+          </nav>
+        </div>
+      )}
 
       <div className="container">
 
-      <div className={`aerodrome-selector ${isPanelCollapsed ? 'collapsed' : ''}`}>
+      <div id="search-section" className={`aerodrome-selector ${isPanelCollapsed ? 'collapsed' : ''}`}>
         {/* Collapsed Summary Header */}
         {isPanelCollapsed && weatherData && (
           <button 
@@ -342,16 +396,18 @@ export default function Home() {
 
       {weatherData && currentWeather && (
         <>
-          <FlightDecision
-            windSpeed={hourly?.windspeed_10m[currentIndex] ?? 0}
-            visibility={currentVisibility}
-            cloudCover={currentCloudCover}
-            cloudBase={cloudBaseFeet}
-            precipitation={currentPrecipitation}
-            aircraftType={aircraftType}
-          />
+          <div id="decision-section">
+            <FlightDecision
+              windSpeed={hourly?.windspeed_10m[currentIndex] ?? 0}
+              visibility={currentVisibility}
+              cloudCover={currentCloudCover}
+              cloudBase={cloudBaseFeet}
+              precipitation={currentPrecipitation}
+              aircraftType={aircraftType}
+            />
+          </div>
 
-          <section className="weather-section">
+          <section id="conditions-section" className="weather-section">
             <h2>{isPlannedTime ? '📅 Forecast Conditions' : '🌤️ Current Conditions'}</h2>
           </section>
 
@@ -468,7 +524,7 @@ export default function Home() {
             )}
           </div>
 
-          <section className="weather-section">
+          <section id="wind-section" className="weather-section">
             <h2>Wind Conditions</h2>
             <WindDisplay
               speed={hourly?.windspeed_10m[currentIndex] ?? 0}
@@ -477,7 +533,7 @@ export default function Home() {
             />
           </section>
 
-          <section className="weather-section">
+          <section id="cloud-section" className="weather-section">
             <h2>Cloud Conditions</h2>
             <CloudBaseDisplay
               cloudCover={currentCloudCover}
@@ -489,10 +545,12 @@ export default function Home() {
             />
           </section>
 
-          <MetarTafPanel
-            icao={selectedAerodrome.icao}
-            aerodromeName={selectedAerodrome.name}
-          />
+          <div id="metar-section">
+            <MetarTafPanel
+              icao={selectedAerodrome.icao}
+              aerodromeName={selectedAerodrome.name}
+            />
+          </div>
 
           <DebugPanel
             data={weatherData}
