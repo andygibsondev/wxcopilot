@@ -1220,10 +1220,15 @@ export default function Home() {
            SWIPEABLE PANELS
            ======================================== */
         .panel-tabs {
+          position: sticky;
+          top: calc(6.5rem + env(safe-area-inset-top));
+          z-index: 998;
           display: flex;
           gap: 0.25rem;
           padding: 0.5rem;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(15, 23, 42, 0.95);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
           border-radius: var(--radius-lg, 16px);
           margin-bottom: 0.75rem;
           overflow-x: auto;
@@ -1354,6 +1359,10 @@ export default function Home() {
 
           .weather-section h2 {
             font-size: 1.375rem;
+          }
+
+          .panel-tabs {
+            top: calc(7rem + env(safe-area-inset-top));
           }
 
           .panel-tab {
