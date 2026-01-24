@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 interface LoadingScreenProps {
   message?: string;
@@ -12,9 +13,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   return (
     <div className="loading-screen">
       <div className="loading-content">
-        <div className="loading-logo">✈️</div>
-        <h1 className="loading-title">WxCopilot</h1>
-        <p className="loading-tagline">Your weather copilot for every flight</p>
+        <div className="loading-logo">
+          <Image 
+            src="/wxcopilot.jpg" 
+            alt="WxCoPilot" 
+            width={280} 
+            height={100}
+            priority
+          />
+        </div>
         <div className="loading-spinner">
           <div className="spinner"></div>
         </div>
@@ -28,7 +35,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           left: 0;
           right: 0;
           bottom: 0;
-          background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+          background: radial-gradient(ellipse at center, #0c1929 0%, #070d15 100%);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -42,27 +49,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         }
 
         .loading-logo {
-          font-size: 4rem;
-          margin-bottom: 1rem;
+          margin-bottom: 2rem;
           animation: float 2s ease-in-out infinite;
+          border-radius: 20px;
+          overflow: hidden;
         }
 
         @keyframes float {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
-        }
-
-        .loading-title {
-          font-size: 2.5rem;
-          font-weight: 800;
-          margin-bottom: 0.5rem;
-          letter-spacing: -0.02em;
-        }
-
-        .loading-tagline {
-          font-size: 1rem;
-          color: rgba(255, 255, 255, 0.7);
-          margin-bottom: 2rem;
         }
 
         .loading-spinner {
@@ -74,8 +69,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         .spinner {
           width: 40px;
           height: 40px;
-          border: 3px solid rgba(255, 255, 255, 0.2);
-          border-top-color: #6366f1;
+          border: 3px solid rgba(6, 182, 212, 0.2);
+          border-top-color: #06b6d4;
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
@@ -86,7 +81,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
         .loading-message {
           font-size: 0.875rem;
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(6, 182, 212, 0.7);
         }
       `}</style>
     </div>

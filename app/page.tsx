@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { WeatherData } from '@/types/weather';
 import { UK_AERODROMES } from '@/data/aerodromes';
 import { WeatherCard } from '@/components/WeatherCard';
@@ -303,8 +304,14 @@ export default function Home() {
       {/* Fixed header bar at top */}
       <header className="fixed-header">
         <div className="fixed-header-content">
-          <span className="fixed-header-logo">✈️</span>
-          <span className="fixed-header-title">WxCopilot</span>
+          <Image 
+            src="/wxcopilot.jpg" 
+            alt="WxCoPilot" 
+            width={140} 
+            height={50}
+            className="header-logo-img"
+            priority
+          />
         </div>
         <button 
           className="hamburger-btn"
