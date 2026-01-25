@@ -292,6 +292,76 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
                     ))}
                   </div>
                 )}
+
+                {/* Parsed TAF Section */}
+                {data.taf.forecast && data.taf.forecast.length > 0 && (
+                  <div className="parsed-taf-section">
+                    <h4>📋 Parsed TAF Forecast</h4>
+                    <div className="parsed-forecasts">
+                      {data.taf.forecast.map((fcst, idx) => (
+                        <div key={idx} className="parsed-forecast-card">
+                          {fcst.fcstTimeFrom && fcst.fcstTimeTo && (
+                            <div className="parsed-time-header">
+                              <span className="parsed-time-label">Period</span>
+                              <span className="parsed-time-value">
+                                {new Date(fcst.fcstTimeFrom).toLocaleString('en-GB', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })} - {new Date(fcst.fcstTimeTo).toLocaleString('en-GB', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                              {fcst.changeInd && (
+                                <span className="parsed-change-indicator">{fcst.changeInd}</span>
+                              )}
+                            </div>
+                          )}
+                          <div className="parsed-conditions">
+                            {fcst.wdir !== undefined && fcst.wspd !== undefined && (
+                              <div className="parsed-condition">
+                                <span className="parsed-label">💨 Wind:</span>
+                                <span className="parsed-value">
+                                  {fcst.wdir}° at {fcst.wspd} kts
+                                  {fcst.wgst && ` (gusts ${fcst.wgst} kts)`}
+                                </span>
+                              </div>
+                            )}
+                            {fcst.visib !== undefined && (
+                              <div className="parsed-condition">
+                                <span className="parsed-label">👁️ Visibility:</span>
+                                <span className="parsed-value">{fcst.visib} statute miles</span>
+                              </div>
+                            )}
+                            {fcst.clouds && fcst.clouds.length > 0 && (
+                              <div className="parsed-condition">
+                                <span className="parsed-label">☁️ Clouds:</span>
+                                <span className="parsed-value">
+                                  {fcst.clouds.map((c, i) => (
+                                    <span key={i}>
+                                      {c.cover} at {c.base} ft
+                                      {i < fcst.clouds!.length - 1 ? ', ' : ''}
+                                    </span>
+                                  ))}
+                                </span>
+                              </div>
+                            )}
+                            {fcst.wxString && (
+                              <div className="parsed-condition">
+                                <span className="parsed-label">🌦️ Weather:</span>
+                                <span className="parsed-value">{fcst.wxString}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <p className="no-data">TAF data not available</p>
@@ -430,6 +500,90 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
           color: #666;
           font-size: 0.875rem;
         }
+        /* Parsed TAF Section */
+        .parsed-taf-section {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 2px solid rgba(0, 0, 0, 0.08);
+        }
+        .parsed-taf-section h4 {
+          font-size: 1rem;
+          font-weight: 700;
+          color: #1e293b;
+          margin-bottom: 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .parsed-forecasts {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .parsed-forecast-card {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+          border-radius: 12px;
+          padding: 1.25rem;
+          border: 2px solid rgba(0, 0, 0, 0.06);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .parsed-time-header {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          flex-wrap: wrap;
+        }
+        .parsed-time-label {
+          font-size: 0.6875rem;
+          font-weight: 600;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .parsed-time-value {
+          font-size: 0.9375rem;
+          font-weight: 700;
+          color: #1e293b;
+          flex: 1;
+        }
+        .parsed-change-indicator {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #ffffff;
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .parsed-conditions {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+        .parsed-condition {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          padding: 0.625rem 0;
+        }
+        .parsed-label {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #64748b;
+          min-width: 100px;
+          flex-shrink: 0;
+        }
+        .parsed-value {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #1e293b;
+          flex: 1;
+          line-height: 1.5;
+        }
         @media (max-width: 640px) {
           .metar-taf-panel {
             padding: 1.25rem;
@@ -438,6 +592,18 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
             flex-direction: column;
           }
           .label {
+            min-width: auto;
+          }
+          .parsed-time-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+          .parsed-condition {
+            flex-direction: column;
+            gap: 0.25rem;
+          }
+          .parsed-label {
             min-width: auto;
           }
         }

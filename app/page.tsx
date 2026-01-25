@@ -9,7 +9,6 @@ import { WindDisplay } from '@/components/WindDisplay';
 import { CloudBaseDisplay } from '@/components/CloudBaseDisplay';
 import { FlightDecision } from '@/components/FlightDecision';
 import { MetarTafPanel } from '@/components/MetarTafPanel';
-import { DebugPanel } from '@/components/DebugPanel';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
 // Generate day options for the next 7 days
@@ -144,6 +143,11 @@ export default function Home() {
         left: index * panelWidth,
         behavior: 'smooth'
       });
+      // Scroll the target panel to top when tapping tab button
+      const targetPanel = swipeContainerRef.current.children[index] as HTMLElement;
+      if (targetPanel) {
+        targetPanel.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
     setActivePanel(index);
     setIsMenuOpen(false);
@@ -751,11 +755,6 @@ export default function Home() {
               </button>
             ))}
           </nav>
-
-          <DebugPanel
-            data={weatherData}
-            title="Raw Forecast Data"
-          />
         </>
       )}
 
