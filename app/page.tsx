@@ -1326,8 +1326,8 @@ export default function Home() {
           right: 0;
           z-index: 998;
           display: flex;
-          gap: 0.25rem;
-          padding: 0.375rem 0.75rem;
+          gap: 0.125rem;
+          padding: 0.25rem 0.5rem;
           background: rgba(15, 23, 42, 0.95);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
@@ -1344,13 +1344,13 @@ export default function Home() {
 
         .panel-tab {
           flex: 1;
-          min-width: 50px;
+          min-width: 0;
           display: flex;
-          flex-direction: row;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 0.25rem;
-          padding: 0.375rem 0.25rem;
+          gap: 0.125rem;
+          padding: 0.25rem 0.125rem;
           background: transparent;
           border: none;
           border-radius: var(--radius-sm, 8px);
@@ -1367,14 +1367,15 @@ export default function Home() {
         }
 
         .tab-icon {
-          font-size: 1rem;
+          font-size: 0.875rem;
         }
 
         .tab-label {
           font-size: 0.5rem;
           font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.01em;
+          letter-spacing: 0;
+          white-space: nowrap;
         }
 
         .swipe-container {
@@ -1386,7 +1387,7 @@ export default function Home() {
           scrollbar-width: none;
           gap: 2rem;
           margin: 0;
-          margin-top: 3.5rem;
+          margin-top: 0.75rem;
           padding-left: 0.75rem;
           padding-right: 0.75rem;
           height: calc(100dvh - 10rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
@@ -1598,17 +1599,23 @@ export default function Home() {
 
           .panel-tabs {
             top: calc(6.5rem + env(safe-area-inset-top));
-            padding: 0.375rem 1.5rem;
+            padding: 0.25rem 1.5rem;
+            gap: 0.25rem;
           }
 
           .panel-tab {
             flex-direction: row;
-            gap: 0.5rem;
-            padding: 0.625rem 1rem;
+            gap: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            min-width: auto;
+          }
+
+          .tab-icon {
+            font-size: 1rem;
           }
 
           .tab-label {
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
           }
 
           .swipe-container {
