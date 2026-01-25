@@ -144,11 +144,6 @@ export default function Home() {
         left: index * panelWidth,
         behavior: 'smooth'
       });
-      // Scroll the target panel to top
-      const targetPanel = swipeContainerRef.current.children[index] as HTMLElement;
-      if (targetPanel) {
-        targetPanel.scrollTo({ top: 0, behavior: 'smooth' });
-      }
     }
     setActivePanel(index);
     setIsMenuOpen(false);
@@ -162,11 +157,6 @@ export default function Home() {
       const newIndex = Math.round(scrollLeft / panelWidth);
       if (newIndex !== activePanel && newIndex >= 0 && newIndex < PANELS.length) {
         setActivePanel(newIndex);
-        // Scroll the new panel to top
-        const targetPanel = swipeContainerRef.current.children[newIndex] as HTMLElement;
-        if (targetPanel) {
-          targetPanel.scrollTo({ top: 0, behavior: 'smooth' });
-        }
       }
     }
   };
@@ -549,20 +539,6 @@ export default function Home() {
 
       {weatherData && currentWeather && (
         <>
-          {/* Panel Navigation Tabs */}
-          <div className="panel-tabs">
-            {PANELS.map((panel, index) => (
-              <button
-                key={panel.id}
-                className={`panel-tab ${activePanel === index ? 'active' : ''}`}
-                onClick={() => scrollToPanel(index)}
-              >
-                <span className="tab-icon">{panel.icon}</span>
-                <span className="tab-label">{panel.label}</span>
-              </button>
-            ))}
-          </div>
-
           {/* Swipeable Panels Container */}
           <div 
             className="swipe-container"
@@ -760,20 +736,21 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Panel Indicators */}
-          <div className="panel-indicators">
+          {/* Bottom Tab Bar */}
+          <nav className="bottom-tab-bar">
             {PANELS.map((panel, index) => (
               <button
                 key={panel.id}
-                className={`indicator-dot ${activePanel === index ? 'active' : ''}`}
+                className={`bottom-tab ${activePanel === index ? 'active' : ''}`}
                 onClick={() => scrollToPanel(index)}
                 aria-label={`Go to ${panel.label}`}
-              />
+              >
+                <span className="bottom-tab-icon">{panel.icon}</span>
+                <span className="bottom-tab-label">{panel.label}</span>
+                {activePanel === index && <span className="bottom-tab-indicator" />}
+              </button>
             ))}
-          </div>
-
-          {/* Swipe hint */}
-          <p className="swipe-hint">← Swipe to navigate →</p>
+          </nav>
 
           <DebugPanel
             data={weatherData}
@@ -1319,65 +1296,6 @@ export default function Home() {
         /* ========================================
            SWIPEABLE PANELS
            ======================================== */
-        .panel-tabs {
-          position: fixed;
-          top: calc(6rem + env(safe-area-inset-top));
-          left: 0;
-          right: 0;
-          z-index: 998;
-          display: flex;
-          gap: 0.125rem;
-          padding: 0.25rem 0.5rem;
-          background: rgba(15, 23, 42, 0.95);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border-radius: 0;
-          margin-bottom: 0;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
-        }
-
-        .panel-tabs::-webkit-scrollbar {
-          display: none;
-        }
-
-        .panel-tab {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 0.125rem;
-          padding: 0.25rem 0.125rem;
-          background: transparent;
-          border: none;
-          border-radius: var(--radius-sm, 8px);
-          color: rgba(255, 255, 255, 0.6);
-          cursor: pointer;
-          transition: all 200ms ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .panel-tab.active {
-          background: rgba(255, 255, 255, 0.95);
-          color: var(--color-text, #1e293b);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .tab-icon {
-          font-size: 0.875rem;
-        }
-
-        .tab-label {
-          font-size: 0.5rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0;
-          white-space: nowrap;
-        }
-
         .swipe-container {
           display: flex;
           overflow-x: auto;
@@ -1385,12 +1303,11 @@ export default function Home() {
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
-          gap: 2rem;
+          gap: 1rem;
           margin: 0;
-          margin-top: 0.75rem;
-          padding-left: 0.75rem;
-          padding-right: 0.75rem;
-          height: calc(100dvh - 10rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+          padding-left: 0.5rem;
+          padding-right: 0.5rem;
+          height: calc(100dvh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4rem);
         }
 
         .swipe-container::-webkit-scrollbar {
@@ -1400,58 +1317,135 @@ export default function Home() {
         .swipe-panel {
           flex: 0 0 98%;
           width: 98%;
+          height: 100%;
+          max-height: 100%;
           scroll-snap-align: center;
           scroll-snap-stop: always;
           padding: 0;
+          padding-bottom: 5rem;
           box-sizing: border-box;
-          overflow-y: auto;
+          overflow-y: scroll;
           overflow-x: hidden;
           -webkit-overflow-scrolling: touch;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,0.2) transparent;
         }
 
         .swipe-panel::-webkit-scrollbar {
-          display: none;
-          width: 0;
+          width: 4px;
         }
 
-        .panel-indicators {
-          display: flex;
-          justify-content: center;
-          gap: 0.5rem;
-          padding: 1rem 0 0.5rem;
+        .swipe-panel::-webkit-scrollbar-track {
+          background: transparent;
         }
 
-        .indicator-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
+        .swipe-panel::-webkit-scrollbar-thumb {
           background: rgba(255, 255, 255, 0.3);
-          border: none;
-          padding: 0;
-          cursor: pointer;
-          transition: all 200ms ease;
-        }
-
-        .indicator-dot.active {
-          width: 24px;
           border-radius: 4px;
-          background: var(--color-accent, #06b6d4);
         }
 
-        .swipe-hint {
-          text-align: center;
-          font-size: 0.75rem;
-          color: rgba(255, 255, 255, 0.4);
-          margin-bottom: 1rem;
+        /* ========================================
+           BOTTOM TAB BAR
+           ======================================== */
+        .bottom-tab-bar {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          display: flex;
+          justify-content: space-around;
+          align-items: stretch;
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-top: 1px solid rgba(6, 182, 212, 0.2);
+          padding-bottom: env(safe-area-inset-bottom);
+          box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .bottom-tab {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 0.25rem;
+          padding: 0.625rem 0.25rem;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          position: relative;
+          transition: all 200ms ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .bottom-tab-icon {
+          font-size: 1.25rem;
+          transition: transform 200ms ease;
+          filter: grayscale(0.5) opacity(0.6);
+        }
+
+        .bottom-tab-label {
+          font-size: 0.625rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.5);
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          transition: color 200ms ease;
+        }
+
+        .bottom-tab-indicator {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 32px;
+          height: 3px;
+          background: linear-gradient(90deg, #06b6d4 0%, #22d3ee 100%);
+          border-radius: 0 0 4px 4px;
+          box-shadow: 0 2px 8px rgba(6, 182, 212, 0.5);
+        }
+
+        .bottom-tab.active .bottom-tab-icon {
+          transform: scale(1.1);
+          filter: grayscale(0) opacity(1);
+        }
+
+        .bottom-tab.active .bottom-tab-label {
+          color: #06b6d4;
+        }
+
+        .bottom-tab:active:not(.active) {
+          background: rgba(255, 255, 255, 0.05);
+        }
+
+        @media (min-width: 768px) {
+          .bottom-tab-bar {
+            max-width: 500px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 20px 20px 0 0;
+            border-left: 1px solid rgba(6, 182, 212, 0.2);
+            border-right: 1px solid rgba(6, 182, 212, 0.2);
+          }
+
+          .bottom-tab {
+            padding: 0.75rem 0.5rem;
+          }
+
+          .bottom-tab-icon {
+            font-size: 1.375rem;
+          }
+
+          .bottom-tab-label {
+            font-size: 0.6875rem;
+          }
         }
 
         /* ========================================
            AIRFIELD INFORMATION PANEL
            ======================================== */
         .airfield-section {
-          padding-bottom: 2rem;
+          padding-bottom: 6rem;
         }
 
         .airfield-details {
@@ -1595,27 +1589,6 @@ export default function Home() {
 
           .weather-section h2 {
             font-size: 1.375rem;
-          }
-
-          .panel-tabs {
-            top: calc(6.5rem + env(safe-area-inset-top));
-            padding: 0.25rem 1.5rem;
-            gap: 0.25rem;
-          }
-
-          .panel-tab {
-            flex-direction: row;
-            gap: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            min-width: auto;
-          }
-
-          .tab-icon {
-            font-size: 1rem;
-          }
-
-          .tab-label {
-            font-size: 0.6875rem;
           }
 
           .swipe-container {
