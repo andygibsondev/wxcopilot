@@ -161,6 +161,11 @@ export default function Home() {
       const newIndex = Math.round(scrollLeft / panelWidth);
       if (newIndex !== activePanel && newIndex >= 0 && newIndex < PANELS.length) {
         setActivePanel(newIndex);
+        // Scroll the newly active panel to top when swiping
+        const targetPanel = swipeContainerRef.current.children[newIndex] as HTMLElement;
+        if (targetPanel) {
+          targetPanel.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
     }
   };
