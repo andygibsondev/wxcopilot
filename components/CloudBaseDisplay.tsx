@@ -59,15 +59,23 @@ export const CloudBaseDisplay: React.FC<CloudBaseDisplayProps> = ({
         value={cloudCondition.text}
         icon={cloudCondition.emoji}
       />
-      <div className="cloud-details">
-        <div className="cloud-detail-item">
-          <span>Low:</span> <strong>{Math.round(cloudCoverLow)}%</strong>
+      <div className="cloud-layers-section">
+        <div className="cloud-layers-description">
+          <p>Cloud cover is measured at different altitude layers. Low clouds affect surface visibility and approach procedures, mid clouds impact en-route flight, and high clouds indicate upper-level weather patterns.</p>
         </div>
-        <div className="cloud-detail-item">
-          <span>Mid:</span> <strong>{Math.round(cloudCoverMid)}%</strong>
-        </div>
-        <div className="cloud-detail-item">
-          <span>High:</span> <strong>{Math.round(cloudCoverHigh)}%</strong>
+        <div className="cloud-details">
+          <div className="cloud-detail-item">
+            <span>Low:</span> <strong>{Math.round(cloudCoverLow)}%</strong>
+            <span className="cloud-description">Surface - 6,500 ft</span>
+          </div>
+          <div className="cloud-detail-item">
+            <span>Mid:</span> <strong>{Math.round(cloudCoverMid)}%</strong>
+            <span className="cloud-description">6,500 - 20,000 ft</span>
+          </div>
+          <div className="cloud-detail-item">
+            <span>High:</span> <strong>{Math.round(cloudCoverHigh)}%</strong>
+            <span className="cloud-description">Above 20,000 ft</span>
+          </div>
         </div>
       </div>
       <style jsx>{`
@@ -76,8 +84,23 @@ export const CloudBaseDisplay: React.FC<CloudBaseDisplayProps> = ({
           grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
           gap: 0.875rem;
         }
-        .cloud-details {
+        .cloud-layers-section {
           grid-column: 1 / -1;
+        }
+        .cloud-layers-description {
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          border-left: 4px solid var(--color-accent, #06b6d4);
+        }
+        .cloud-layers-description p {
+          font-size: 0.8125rem;
+          color: #64748b;
+          line-height: 1.6;
+          margin: 0;
+        }
+        .cloud-details {
           background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
           border-radius: 16px;
           padding: 1.25rem;
@@ -92,7 +115,7 @@ export const CloudBaseDisplay: React.FC<CloudBaseDisplayProps> = ({
           align-items: center;
           gap: 0.375rem;
         }
-        .cloud-detail-item span {
+        .cloud-detail-item span:first-of-type {
           font-size: 0.6875rem;
           color: #64748b;
           text-transform: uppercase;
@@ -105,7 +128,23 @@ export const CloudBaseDisplay: React.FC<CloudBaseDisplayProps> = ({
           color: #1e293b;
           letter-spacing: -0.02em;
         }
+        .cloud-description {
+          font-size: 0.625rem;
+          color: #94a3b8;
+          font-weight: 500;
+          text-transform: none;
+          letter-spacing: 0;
+          margin-top: 0.125rem;
+          text-align: center;
+          line-height: 1.3;
+        }
         @media (max-width: 640px) {
+          .cloud-layers-description {
+            padding: 0.875rem;
+          }
+          .cloud-layers-description p {
+            font-size: 0.75rem;
+          }
           .cloud-details {
             flex-direction: row;
             gap: 0.75rem;
@@ -116,12 +155,21 @@ export const CloudBaseDisplay: React.FC<CloudBaseDisplayProps> = ({
           .cloud-display {
             gap: 1rem;
           }
+          .cloud-layers-description {
+            padding: 1.25rem;
+          }
+          .cloud-layers-description p {
+            font-size: 0.875rem;
+          }
           .cloud-details {
             border-radius: 20px;
             padding: 1.5rem;
           }
           .cloud-detail-item strong {
             font-size: 1.5rem;
+          }
+          .cloud-description {
+            font-size: 0.6875rem;
           }
         }
       `}</style>
