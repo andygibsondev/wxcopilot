@@ -1326,19 +1326,14 @@ export default function Home() {
           overflow-y: scroll;
           overflow-x: hidden;
           -webkit-overflow-scrolling: touch;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
         }
 
         .swipe-panel::-webkit-scrollbar {
-          width: 4px;
-        }
-
-        .swipe-panel::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .swipe-panel::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 4px;
+          display: none; /* Chrome, Safari, Opera */
+          width: 0;
+          height: 0;
         }
 
         /* ========================================
