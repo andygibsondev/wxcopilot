@@ -116,20 +116,24 @@ export const AddToHomeScreen: React.FC = () => {
           right: 0;
           z-index: 1000;
           padding: 1.25rem;
-          background: linear-gradient(135deg, rgba(99, 102, 241, 0.98) 0%, rgba(139, 92, 246, 0.98) 100%);
+          background: rgba(255, 255, 255, 0.98);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
+          box-shadow: 
+            0 -4px 30px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          border-top: 1px solid rgba(226, 232, 240, 0.8);
           animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-          border-top: 3px solid rgba(255, 255, 255, 0.3);
         }
 
         @keyframes slideUp {
           from {
             transform: translateY(100%);
+            opacity: 0;
           }
           to {
             transform: translateY(0);
+            opacity: 1;
           }
         }
 
@@ -144,25 +148,33 @@ export const AddToHomeScreen: React.FC = () => {
         .add-to-home-screen-icon {
           font-size: 2rem;
           flex-shrink: 0;
+          width: 56px;
+          height: 56px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+          border-radius: 16px;
+          border: 1px solid rgba(99, 102, 241, 0.15);
         }
 
         .add-to-home-screen-text {
           flex: 1;
-          color: white;
+          min-width: 0;
         }
 
         .add-to-home-screen-text h3 {
-          font-size: 1.125rem;
-          font-weight: 800;
+          font-size: 1rem;
+          font-weight: 700;
           margin: 0 0 0.375rem 0;
-          color: white;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          color: var(--color-text, #1e293b);
+          letter-spacing: -0.02em;
         }
 
         .add-to-home-screen-text p {
-          font-size: 0.9375rem;
+          font-size: 0.875rem;
           margin: 0;
-          color: rgba(255, 255, 255, 0.98);
+          color: var(--color-text-muted, #64748b);
           line-height: 1.5;
           font-weight: 500;
         }
@@ -182,54 +194,74 @@ export const AddToHomeScreen: React.FC = () => {
         }
 
         .install-btn {
-          padding: 0.75rem 1.5rem;
-          background: white;
-          color: #6366f1;
+          padding: 0.625rem 1.25rem;
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          color: white;
           border: none;
           border-radius: 12px;
-          font-size: 0.9375rem;
-          font-weight: 800;
+          font-size: 0.875rem;
+          font-weight: 700;
           cursor: pointer;
-          transition: all 200ms;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
+          transition: all var(--transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
+          box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+          -webkit-tap-highlight-color: transparent;
         }
 
         .install-btn:active {
-          transform: scale(0.95);
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-        }
-
-        .install-btn:hover {
-          background: #f8fafc;
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+          transform: scale(0.98);
+          box-shadow: 0 1px 6px rgba(99, 102, 241, 0.4);
         }
 
         .dismiss-btn {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.2);
-          color: white;
-          border: none;
+          background: rgba(248, 250, 252, 0.8);
+          color: var(--color-text-muted, #64748b);
+          border: 1px solid rgba(226, 232, 240, 0.8);
           border-radius: 50%;
           font-size: 1.125rem;
           cursor: pointer;
-          transition: all 200ms;
+          transition: all var(--transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
           flex-shrink: 0;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .dismiss-btn:active {
-          background: rgba(255, 255, 255, 0.3);
-          transform: scale(0.9);
+          background: rgba(241, 245, 249, 0.9);
+          transform: scale(0.95);
+          border-color: rgba(203, 213, 225, 0.9);
         }
 
         @media (min-width: 768px) {
           .add-to-home-screen {
             display: none;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .add-to-home-screen {
+            padding: 1rem;
+          }
+          .add-to-home-screen-content {
+            gap: 0.875rem;
+          }
+          .add-to-home-screen-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.75rem;
+          }
+          .add-to-home-screen-text h3 {
+            font-size: 0.9375rem;
+          }
+          .add-to-home-screen-text p {
+            font-size: 0.8125rem;
+          }
+          .install-btn {
+            padding: 0.5625rem 1rem;
+            font-size: 0.8125rem;
           }
         }
       `}</style>

@@ -35,11 +35,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           left: 0;
           right: 0;
           bottom: 0;
+          width: 100vw;
+          height: 100vh;
+          min-height: 100vh;
           background: radial-gradient(ellipse at center, #0c1929 0%, #070d15 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
+          overflow: hidden;
         }
 
         .loading-content {

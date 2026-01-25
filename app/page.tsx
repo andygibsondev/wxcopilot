@@ -62,7 +62,6 @@ export default function Home() {
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [hasDefaults, setHasDefaults] = useState(false);
   const [defaultsSaved, setDefaultsSaved] = useState(false);
-  const [shouldAutoFetch, setShouldAutoFetch] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [activePanel, setActivePanel] = useState(0);
   const swipeContainerRef = useRef<HTMLDivElement>(null);
@@ -99,7 +98,6 @@ export default function Home() {
       }
 
       setHasDefaults(foundDefaults);
-      setShouldAutoFetch(foundDefaults);
       setPrefsLoaded(true);
     } catch (e) {
       console.error('Error loading preferences:', e);
@@ -227,7 +225,9 @@ export default function Home() {
     setError(null);
     try {
       // Build API URL with optional date range for planned flight time
-      let apiUrl = `/api/weather?latitude=${selectedAerodrome.latitude}&longitude=${selectedAerodrome.longitude}`;
+      // Add cache-busting parameter to ensure fresh data on every load
+      const cacheBuster = new Date().getTime();
+      let apiUrl = `/api/weather?latitude=${selectedAerodrome.latitude}&longitude=${selectedAerodrome.longitude}&_t=${cacheBuster}`;
       
       if (plannedFlightTime) {
         // Calculate date range: same day as planned time (API requires same start/end date or range)
@@ -279,14 +279,13 @@ export default function Home() {
     }
   }, [selectedAerodrome, selectedDay, selectedHour]);
 
-  // Auto-fetch weather if defaults are loaded (only on initial load)
+  // Auto-fetch weather on every app load (after preferences are loaded)
   useEffect(() => {
-    if (!isAppLoading && prefsLoaded && shouldAutoFetch) {
+    if (!isAppLoading && prefsLoaded) {
       fetchWeather();
-      setShouldAutoFetch(false); // Only auto-fetch once
       setIsPanelCollapsed(true); // Collapse the panel after auto-search
     }
-  }, [isAppLoading, prefsLoaded, shouldAutoFetch, fetchWeather]);
+  }, [isAppLoading, prefsLoaded, fetchWeather]);
 
   // Scroll to top of decision panel when search criteria changes
   const prevSearchCriteriaRef = useRef<{
