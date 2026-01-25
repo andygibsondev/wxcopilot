@@ -64,6 +64,9 @@ export default function Home() {
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [activePanel, setActivePanel] = useState(0);
   const swipeContainerRef = useRef<HTMLDivElement>(null);
+  const [aerodromeSearch, setAerodromeSearch] = useState('');
+  const [showAerodromeList, setShowAerodromeList] = useState(false);
+  const aerodromeSearchRef = useRef<HTMLInputElement>(null);
 
   const PANELS = [
     { id: 'decision', label: 'Decision', icon: '✈️' },
@@ -124,6 +127,35 @@ export default function Home() {
     } catch (e) {
       console.error('Error clearing preferences:', e);
     }
+  };
+
+  // Filter aerodromes based on search query
+  const filteredAerodromes = React.useMemo(() => {
+    if (!aerodromeSearch.trim()) {
+      return UK_AERODROMES;
+    }
+    const searchLower = aerodromeSearch.toLowerCase().trim();
+    return UK_AERODROMES.filter(aerodrome => 
+      aerodrome.name.toLowerCase().includes(searchLower) ||
+      aerodrome.icao?.toLowerCase().includes(searchLower)
+    );
+  }, [aerodromeSearch]);
+
+  // Auto-focus search input when panel opens
+  useEffect(() => {
+    if (!isPanelCollapsed && aerodromeSearchRef.current) {
+      // Small delay to ensure the panel is fully rendered
+      setTimeout(() => {
+        aerodromeSearchRef.current?.focus();
+      }, 100);
+    }
+  }, [isPanelCollapsed]);
+
+  // Handle aerodrome selection
+  const handleAerodromeSelect = (aerodrome: typeof UK_AERODROMES[0]) => {
+    setSelectedAerodrome(aerodrome);
+    setAerodromeSearch('');
+    setShowAerodromeList(false);
   };
 
   // Initial app loading
@@ -427,23 +459,90 @@ export default function Home() {
         {!isPanelCollapsed && (
           <>
             <div className="selector-row">
-              <div className="selector-group">
-                <label htmlFor="aerodrome-select">Select Aerodrome:</label>
-                <select
-                  id="aerodrome-select"
-                  value={selectedAerodrome.name}
-                  onChange={(e) => {
-                    const aerodrome = UK_AERODROMES.find((a) => a.name === e.target.value);
-                    if (aerodrome) setSelectedAerodrome(aerodrome);
-                  }}
-                  disabled={loading}
-                >
-                  {UK_AERODROMES.map((aerodrome) => (
-                    <option key={aerodrome.name} value={aerodrome.name}>
-                      {aerodrome.name} {aerodrome.icao && `(${aerodrome.icao})`}
-                    </option>
-                  ))}
-                </select>
+              <div className="selector-group aerodrome-search-group">
+                <label htmlFor="aerodrome-search">Search Aerodrome:</label>
+                <div className="aerodrome-search-wrapper">
+                  <input
+                    ref={aerodromeSearchRef}
+                    id="aerodrome-search"
+                    type="text"
+                    placeholder="Type name or ICAO code (e.g., EGLL, Heathrow)..."
+                    value={aerodromeSearch}
+                    onChange={(e) => {
+                      setAerodromeSearch(e.target.value);
+                      setShowAerodromeList(true);
+                    }}
+                    onFocus={() => setShowAerodromeList(true)}
+                    onBlur={() => {
+                      // Delay hiding to allow click events
+                      setTimeout(() => setShowAerodromeList(false), 200);
+                    }}
+                    disabled={loading}
+                    className="aerodrome-search-input"
+                  />
+                  {aerodromeSearch && (
+                    <button
+                      type="button"
+                      className="clear-search-btn"
+                      onClick={() => {
+                        setAerodromeSearch('');
+                        aerodromeSearchRef.current?.focus();
+                      }}
+                      aria-label="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {showAerodromeList && filteredAerodromes.length > 0 && (
+                  <div className="aerodrome-results">
+                    <div className="aerodrome-results-header">
+                      {filteredAerodromes.length} {filteredAerodromes.length === 1 ? 'result' : 'results'}
+                    </div>
+                    <div className="aerodrome-list">
+                      {filteredAerodromes.slice(0, 10).map((aerodrome) => (
+                        <button
+                          key={aerodrome.name}
+                          type="button"
+                          className={`aerodrome-item ${selectedAerodrome.name === aerodrome.name ? 'selected' : ''}`}
+                          onClick={() => handleAerodromeSelect(aerodrome)}
+                          disabled={loading}
+                        >
+                          <div className="aerodrome-item-content">
+                            <span className="aerodrome-item-name">{aerodrome.name}</span>
+                            {aerodrome.icao && (
+                              <span className="aerodrome-item-icao">{aerodrome.icao}</span>
+                            )}
+                          </div>
+                          {selectedAerodrome.name === aerodrome.name && (
+                            <span className="aerodrome-item-check">✓</span>
+                          )}
+                        </button>
+                      ))}
+                      {filteredAerodromes.length > 10 && (
+                        <div className="aerodrome-results-footer">
+                          +{filteredAerodromes.length - 10} more - refine your search
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {showAerodromeList && aerodromeSearch.trim() && filteredAerodromes.length === 0 && (
+                  <div className="aerodrome-no-results">
+                    No aerodromes found matching "{aerodromeSearch}"
+                  </div>
+                )}
+                {!showAerodromeList && (
+                  <div className="selected-aerodrome-display">
+                    <span className="selected-aerodrome-label">Selected:</span>
+                    <span className="selected-aerodrome-name">
+                      {selectedAerodrome.name}
+                      {selectedAerodrome.icao && (
+                        <span className="selected-aerodrome-icao"> ({selectedAerodrome.icao})</span>
+                      )}
+                    </span>
+                  </div>
+                )}
               </div>
               
               <div className="selector-group day-hour-picker">
@@ -881,6 +980,235 @@ export default function Home() {
           letter-spacing: 0.08em;
         }
 
+        /* Aerodrome Search */
+        .aerodrome-search-group {
+          position: relative;
+        }
+
+        .aerodrome-search-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .aerodrome-search-input {
+          width: 100%;
+          padding: 1rem 1.25rem;
+          padding-right: 3rem;
+          border: 2px solid rgba(0, 0, 0, 0.08);
+          border-radius: var(--radius-lg, 16px);
+          font-size: 1rem;
+          font-weight: 500;
+          background: rgba(248, 250, 252, 0.8);
+          color: var(--color-text, #1e293b);
+          transition: all var(--transition-fast, 150ms);
+          -webkit-appearance: none;
+          appearance: none;
+        }
+
+        .aerodrome-search-input:focus {
+          outline: none;
+          border-color: var(--color-primary, #6366f1);
+          background: white;
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        .aerodrome-search-input::placeholder {
+          color: var(--color-text-muted, #94a3b8);
+          font-weight: 400;
+        }
+
+        .clear-search-btn {
+          position: absolute;
+          right: 0.75rem;
+          background: rgba(0, 0, 0, 0.05);
+          border: none;
+          border-radius: var(--radius-full, 9999px);
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: var(--color-text-muted, #64748b);
+          font-size: 0.875rem;
+          transition: all var(--transition-fast, 150ms);
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .clear-search-btn:hover {
+          background: rgba(0, 0, 0, 0.1);
+          color: var(--color-text, #1e293b);
+        }
+
+        .clear-search-btn:active {
+          transform: scale(0.9);
+        }
+
+        .aerodrome-results {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          margin-top: 0.5rem;
+          background: white;
+          border-radius: var(--radius-lg, 16px);
+          box-shadow: 
+            0 10px 40px rgba(0, 0, 0, 0.15),
+            0 2px 8px rgba(0, 0, 0, 0.1);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          z-index: 1001;
+          max-height: 400px;
+          overflow-y: auto;
+          overflow-x: hidden;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+        }
+
+        .aerodrome-results::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .aerodrome-results::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .aerodrome-results::-webkit-scrollbar-thumb {
+          background: rgba(99, 102, 241, 0.3);
+          border-radius: 3px;
+        }
+
+        .aerodrome-results::-webkit-scrollbar-thumb:hover {
+          background: rgba(99, 102, 241, 0.5);
+        }
+
+        .aerodrome-results-header {
+          padding: 0.75rem 1rem;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--color-text-muted, #64748b);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+          background: rgba(248, 250, 252, 0.5);
+        }
+
+        .aerodrome-list {
+          padding: 0.5rem;
+        }
+
+        .aerodrome-item {
+          width: 100%;
+          padding: 0.875rem 1rem;
+          background: transparent;
+          border: none;
+          border-radius: var(--radius-md, 12px);
+          cursor: pointer;
+          text-align: left;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          transition: all var(--transition-fast, 150ms);
+          -webkit-tap-highlight-color: transparent;
+          margin-bottom: 0.25rem;
+        }
+
+        .aerodrome-item:last-child {
+          margin-bottom: 0;
+        }
+
+        .aerodrome-item:hover:not(:disabled) {
+          background: rgba(99, 102, 241, 0.08);
+        }
+
+        .aerodrome-item:active:not(:disabled) {
+          background: rgba(99, 102, 241, 0.12);
+          transform: scale(0.98);
+        }
+
+        .aerodrome-item.selected {
+          background: rgba(99, 102, 241, 0.1);
+          border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .aerodrome-item:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .aerodrome-item-content {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          flex: 1;
+        }
+
+        .aerodrome-item-name {
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: var(--color-text, #1e293b);
+        }
+
+        .aerodrome-item-icao {
+          font-size: 0.8125rem;
+          font-weight: 600;
+          color: var(--color-primary, #6366f1);
+          letter-spacing: 0.05em;
+        }
+
+        .aerodrome-item-check {
+          color: var(--color-primary, #6366f1);
+          font-size: 1.125rem;
+          font-weight: bold;
+        }
+
+        .aerodrome-results-footer {
+          padding: 0.75rem 1rem;
+          font-size: 0.8125rem;
+          color: var(--color-text-muted, #64748b);
+          text-align: center;
+          font-style: italic;
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
+          background: rgba(248, 250, 252, 0.5);
+        }
+
+        .aerodrome-no-results {
+          padding: 1.5rem 1rem;
+          text-align: center;
+          color: var(--color-text-muted, #64748b);
+          font-size: 0.875rem;
+        }
+
+        .selected-aerodrome-display {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.875rem 1rem;
+          background: rgba(99, 102, 241, 0.05);
+          border: 1px solid rgba(99, 102, 241, 0.15);
+          border-radius: var(--radius-md, 12px);
+          margin-top: 0.5rem;
+        }
+
+        .selected-aerodrome-label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--color-text-muted, #64748b);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .selected-aerodrome-name {
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: var(--color-text, #1e293b);
+        }
+
+        .selected-aerodrome-icao {
+          color: var(--color-primary, #6366f1);
+          font-weight: 700;
+        }
+
         /* Modern selects */
         .aerodrome-selector select {
           padding: 1rem 1.25rem;
@@ -970,8 +1298,8 @@ export default function Home() {
         .aircraft-selector {
           display: flex;
           flex-direction: column;
-          gap: 1rem;
-          padding-top: 1.25rem;
+          gap: 0.75rem;
+          padding-top: 1rem;
           border-top: 1px solid rgba(0, 0, 0, 0.06);
         }
 
@@ -985,22 +1313,23 @@ export default function Home() {
 
         .aircraft-buttons {
           display: grid;
-          grid-template-columns: 1fr;
-          gap: 0.625rem;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.5rem;
         }
 
         .aircraft-btn {
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 0.75rem;
-          padding: 1rem 1.25rem;
+          gap: 0.375rem;
+          padding: 0.625rem 0.5rem;
           border: 2px solid rgba(0, 0, 0, 0.06);
-          border-radius: var(--radius-lg, 16px);
+          border-radius: var(--radius-md, 12px);
           background: rgba(248, 250, 252, 0.8);
           cursor: pointer;
           transition: all var(--transition-fast, 150ms);
-          font-size: 1rem;
+          font-size: 0.8125rem;
           font-weight: 600;
           color: var(--color-text, #1e293b);
           -webkit-tap-highlight-color: transparent;
@@ -1015,7 +1344,7 @@ export default function Home() {
           background: linear-gradient(135deg, var(--color-primary, #6366f1) 0%, var(--color-secondary, #8b5cf6) 100%);
           color: white;
           box-shadow: 
-            0 4px 15px rgba(99, 102, 241, 0.4),
+            0 2px 8px rgba(99, 102, 241, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
@@ -1025,11 +1354,12 @@ export default function Home() {
         }
 
         .aircraft-icon {
-          font-size: 1.625rem;
+          font-size: 1.25rem;
         }
 
         .aircraft-label {
           white-space: nowrap;
+          font-size: 0.6875rem;
         }
 
         /* Refresh button */
@@ -1151,6 +1481,18 @@ export default function Home() {
 
           .selector-group {
             flex: 1;
+          }
+
+          .aerodrome-results {
+            max-height: 500px;
+          }
+
+          .aerodrome-list {
+            padding: 0.75rem;
+          }
+
+          .aerodrome-item {
+            padding: 1rem 1.25rem;
           }
 
           .aircraft-buttons {
