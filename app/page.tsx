@@ -10,6 +10,7 @@ import { CloudBaseDisplay } from '@/components/CloudBaseDisplay';
 import { FlightDecision } from '@/components/FlightDecision';
 import { MetarTafPanel } from '@/components/MetarTafPanel';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { AirfieldMap } from '@/components/AirfieldMap';
 
 // Generate day options for the next 7 days
 function getDayOptions() {
@@ -784,13 +785,11 @@ export default function Home() {
                 </div>
 
                 <div className="airfield-map">
-                  <iframe
-                    title="Airfield Map"
-                    width="100%"
-                    height="300"
-                    style={{ border: 0, borderRadius: '12px' }}
-                    loading="lazy"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedAerodrome.longitude - 0.05}%2C${selectedAerodrome.latitude - 0.03}%2C${selectedAerodrome.longitude + 0.05}%2C${selectedAerodrome.latitude + 0.03}&layer=mapnik&marker=${selectedAerodrome.latitude}%2C${selectedAerodrome.longitude}`}
+                  <AirfieldMap
+                    latitude={selectedAerodrome.latitude}
+                    longitude={selectedAerodrome.longitude}
+                    name={selectedAerodrome.name}
+                    icao={selectedAerodrome.icao}
                   />
                   <a 
                     href={`https://www.openstreetmap.org/?mlat=${selectedAerodrome.latitude}&mlon=${selectedAerodrome.longitude}#map=14/${selectedAerodrome.latitude}/${selectedAerodrome.longitude}`}
