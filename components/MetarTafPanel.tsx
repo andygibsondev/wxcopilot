@@ -2,6 +2,132 @@
 
 import React, { useState, useEffect } from 'react';
 
+// Helper functions for human-readable TAF parsing
+const getCloudCoverDescription = (cover: string): string => {
+  const coverMap: { [key: string]: string } = {
+    'FEW': 'Few clouds',
+    'SCT': 'Scattered clouds',
+    'BKN': 'Broken clouds',
+    'OVC': 'Overcast',
+    'CLR': 'Clear',
+    'SKC': 'Sky clear',
+    'NSC': 'No significant clouds',
+    'NCD': 'No cloud detected',
+  };
+  return coverMap[cover] || cover;
+};
+
+const getChangeIndicatorDescription = (changeInd?: string): string => {
+  if (!changeInd) return '';
+  const changeMap: { [key: string]: string } = {
+    'TEMPO': 'Temporary conditions expected',
+    'PROB': 'Probable conditions',
+    'BECMG': 'Becoming (gradual change)',
+    'FM': 'From (specific time)',
+    'PROB30': '30% probability',
+    'PROB40': '40% probability',
+  };
+  return changeMap[changeInd] || changeInd;
+};
+
+const getWindDirection = (degrees: number): string => {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(degrees / 22.5) % 16;
+  return directions[index];
+};
+
+const getVisibilityDescription = (visib: number): string => {
+  if (visib >= 10) return 'Excellent visibility';
+  if (visib >= 6) return 'Good visibility';
+  if (visib >= 3) return 'Moderate visibility';
+  if (visib >= 1) return 'Reduced visibility';
+  return 'Poor visibility';
+};
+
+const getWindDescription = (wdir?: number, wspd?: number, wgst?: number): string => {
+  if (wdir === undefined || wspd === undefined) return '';
+  
+  const direction = getWindDirection(wdir);
+  let desc = `Wind from ${direction} (${wdir}°) at ${wspd} knots`;
+  
+  if (wgst) {
+    desc += `, gusting to ${wgst} knots`;
+  }
+  
+  // Add wind strength description
+  if (wspd < 5) {
+    desc += ' - Light winds';
+  } else if (wspd < 15) {
+    desc += ' - Light to moderate winds';
+  } else if (wspd < 25) {
+    desc += ' - Moderate winds';
+  } else if (wspd < 35) {
+    desc += ' - Strong winds';
+  } else {
+    desc += ' - Very strong winds';
+  }
+  
+  return desc;
+};
+
+const getCloudDescription = (clouds: Array<{ cover: string; base: number }>): string => {
+  if (!clouds || clouds.length === 0) return 'Clear skies';
+  
+  return clouds.map((cloud, idx) => {
+    const coverDesc = getCloudCoverDescription(cloud.cover);
+    const baseFeet = cloud.base;
+    const baseDesc = baseFeet < 1000 ? `${baseFeet}ft (very low)` :
+                     baseFeet < 3000 ? `${baseFeet}ft (low)` :
+                     baseFeet < 10000 ? `${baseFeet}ft (medium)` :
+                     `${baseFeet}ft (high)`;
+    
+    return `${coverDesc} at ${baseDesc}`;
+  }).join(', ');
+};
+
+const generateHumanSummary = (fcst: any): string => {
+  const parts: string[] = [];
+  
+  // Time period
+  if (fcst.fcstTimeFrom && fcst.fcstTimeTo) {
+    const from = new Date(fcst.fcstTimeFrom);
+    const to = new Date(fcst.fcstTimeTo);
+    const timeStr = `${from.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} to ${to.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+    parts.push(`During ${timeStr}`);
+  }
+  
+  // Change indicator
+  if (fcst.changeInd) {
+    const changeDesc = getChangeIndicatorDescription(fcst.changeInd);
+    parts.push(changeDesc);
+  }
+  
+  // Wind
+  if (fcst.wdir !== undefined && fcst.wspd !== undefined) {
+    const windDesc = getWindDescription(fcst.wdir, fcst.wspd, fcst.wgst);
+    if (windDesc) parts.push(windDesc);
+  }
+  
+  // Visibility
+  if (fcst.visib !== undefined) {
+    parts.push(`${getVisibilityDescription(fcst.visib)} (${fcst.visib} statute miles)`);
+  }
+  
+  // Clouds
+  if (fcst.clouds && fcst.clouds.length > 0) {
+    parts.push(getCloudDescription(fcst.clouds));
+  } else {
+    parts.push('Clear skies');
+  }
+  
+  // Weather
+  if (fcst.wxString) {
+    parts.push(`Weather: ${fcst.wxString}`);
+  }
+  
+  return parts.join('. ') + '.';
+};
+
 interface MetarTafPanelProps {
   icao?: string;
   aerodromeName: string;
@@ -293,72 +419,91 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
                   </div>
                 )}
 
-                {/* Parsed TAF Section */}
-                {data.taf.forecast && data.taf.forecast.length > 0 && (
+                {/* Human-Readable TAF Section */}
+                {data.taf && data.taf.forecast && Array.isArray(data.taf.forecast) && data.taf.forecast.length > 0 && (
                   <div className="parsed-taf-section">
-                    <h4>📋 Parsed TAF Forecast</h4>
+                    <h4>📋 Human-Readable TAF Forecast</h4>
+                    <p className="parsed-intro">
+                      This forecast provides a plain-language interpretation of the TAF data to help you understand what conditions to expect.
+                    </p>
                     <div className="parsed-forecasts">
-                      {data.taf.forecast.map((fcst, idx) => (
-                        <div key={idx} className="parsed-forecast-card">
-                          {fcst.fcstTimeFrom && fcst.fcstTimeTo && (
-                            <div className="parsed-time-header">
-                              <span className="parsed-time-label">Period</span>
-                              <span className="parsed-time-value">
-                                {new Date(fcst.fcstTimeFrom).toLocaleString('en-GB', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })} - {new Date(fcst.fcstTimeTo).toLocaleString('en-GB', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                              {fcst.changeInd && (
-                                <span className="parsed-change-indicator">{fcst.changeInd}</span>
-                              )}
-                            </div>
-                          )}
-                          <div className="parsed-conditions">
-                            {fcst.wdir !== undefined && fcst.wspd !== undefined && (
-                              <div className="parsed-condition">
-                                <span className="parsed-label">💨 Wind:</span>
-                                <span className="parsed-value">
-                                  {fcst.wdir}° at {fcst.wspd} kts
-                                  {fcst.wgst && ` (gusts ${fcst.wgst} kts)`}
-                                </span>
-                              </div>
-                            )}
-                            {fcst.visib !== undefined && (
-                              <div className="parsed-condition">
-                                <span className="parsed-label">👁️ Visibility:</span>
-                                <span className="parsed-value">{fcst.visib} statute miles</span>
-                              </div>
-                            )}
-                            {fcst.clouds && fcst.clouds.length > 0 && (
-                              <div className="parsed-condition">
-                                <span className="parsed-label">☁️ Clouds:</span>
-                                <span className="parsed-value">
-                                  {fcst.clouds.map((c, i) => (
-                                    <span key={i}>
-                                      {c.cover} at {c.base} ft
-                                      {i < fcst.clouds!.length - 1 ? ', ' : ''}
+                      {data.taf.forecast.map((fcst, idx) => {
+                        try {
+                          return (
+                            <div key={idx} className="parsed-forecast-card">
+                              {fcst.fcstTimeFrom && fcst.fcstTimeTo && (
+                                <div className="parsed-time-header">
+                                  <span className="parsed-time-label">Forecast Period</span>
+                                  <span className="parsed-time-value">
+                                    {new Date(fcst.fcstTimeFrom).toLocaleString('en-GB', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })} - {new Date(fcst.fcstTimeTo).toLocaleString('en-GB', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </span>
+                                  {fcst.changeInd && (
+                                    <span className="parsed-change-indicator" title={getChangeIndicatorDescription(fcst.changeInd)}>
+                                      {fcst.changeInd}
                                     </span>
-                                  ))}
-                                </span>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {/* Human-readable summary */}
+                              <div className="human-summary">
+                                <p className="summary-text">{generateHumanSummary(fcst)}</p>
                               </div>
-                            )}
-                            {fcst.wxString && (
-                              <div className="parsed-condition">
-                                <span className="parsed-label">🌦️ Weather:</span>
-                                <span className="parsed-value">{fcst.wxString}</span>
+                              
+                              <div className="parsed-conditions">
+                                {fcst.wdir !== undefined && fcst.wspd !== undefined && (
+                                  <div className="parsed-condition">
+                                    <span className="parsed-label">💨 Wind:</span>
+                                    <span className="parsed-value">
+                                      {getWindDescription(fcst.wdir, fcst.wspd, fcst.wgst)}
+                                    </span>
+                                  </div>
+                                )}
+                                {fcst.visib !== undefined && (
+                                  <div className="parsed-condition">
+                                    <span className="parsed-label">👁️ Visibility:</span>
+                                    <span className="parsed-value">
+                                      {getVisibilityDescription(fcst.visib)} ({fcst.visib} statute miles)
+                                    </span>
+                                  </div>
+                                )}
+                                {fcst.clouds && fcst.clouds.length > 0 ? (
+                                  <div className="parsed-condition">
+                                    <span className="parsed-label">☁️ Clouds:</span>
+                                    <span className="parsed-value">
+                                      {getCloudDescription(fcst.clouds)}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="parsed-condition">
+                                    <span className="parsed-label">☁️ Clouds:</span>
+                                    <span className="parsed-value">Clear skies</span>
+                                  </div>
+                                )}
+                                {fcst.wxString && (
+                                  <div className="parsed-condition">
+                                    <span className="parsed-label">🌦️ Weather:</span>
+                                    <span className="parsed-value">{fcst.wxString}</span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                            </div>
+                          );
+                        } catch (error) {
+                          console.error('Error rendering forecast:', error, fcst);
+                          return null;
+                        }
+                      })}
                     </div>
                   </div>
                 )}
@@ -510,10 +655,31 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
           font-size: 1rem;
           font-weight: 700;
           color: #1e293b;
-          margin-bottom: 1rem;
+          margin-bottom: 0.75rem;
           display: flex;
           align-items: center;
           gap: 0.5rem;
+        }
+        .parsed-intro {
+          font-size: 0.875rem;
+          color: #64748b;
+          margin-bottom: 1.25rem;
+          line-height: 1.6;
+          font-style: italic;
+        }
+        .human-summary {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+          border-left: 4px solid #6366f1;
+          padding: 1rem;
+          border-radius: 8px;
+          margin-bottom: 1rem;
+        }
+        .summary-text {
+          font-size: 0.9375rem;
+          line-height: 1.7;
+          color: #1e293b;
+          margin: 0;
+          font-weight: 500;
         }
         .parsed-forecasts {
           display: flex;

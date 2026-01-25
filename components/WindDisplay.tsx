@@ -42,65 +42,108 @@ export const WindDisplay: React.FC<WindDisplayProps> = ({
     <div className="wind-display">
       {/* Wind Direction Compass - Full Width */}
       <div className="wind-compass-card">
-        <div className="weather-card-header">
-          <span className="weather-icon">🧭</span>
-          <h3>Wind Direction</h3>
-        </div>
         <div className="compass-container">
           <div className="compass">
-            {/* Compass rose background */}
+            {/* Modern compass rose */}
             <div className="compass-rose">
-              <span className="compass-point north">N</span>
-              <span className="compass-point east">E</span>
-              <span className="compass-point south">S</span>
-              <span className="compass-point west">W</span>
-              {/* Tick marks */}
-              {[...Array(36)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`tick ${i % 9 === 0 ? 'major' : i % 3 === 0 ? 'minor' : 'small'}`}
-                  style={{ transform: `rotate(${i * 10}deg)` }}
-                />
-              ))}
+              {/* Cardinal directions */}
+              <div className="compass-cardinal north">
+                <span className="cardinal-label">N</span>
+                <div className="cardinal-line"></div>
+              </div>
+              <div className="compass-cardinal east">
+                <span className="cardinal-label">E</span>
+                <div className="cardinal-line"></div>
+              </div>
+              <div className="compass-cardinal south">
+                <span className="cardinal-label">S</span>
+                <div className="cardinal-line"></div>
+              </div>
+              <div className="compass-cardinal west">
+                <span className="cardinal-label">W</span>
+                <div className="cardinal-line"></div>
+              </div>
+              
+              {/* Intercardinal directions */}
+              <div className="compass-intercardinal ne" style={{ transform: 'rotate(45deg)' }}>
+                <span className="intercardinal-label">NE</span>
+              </div>
+              <div className="compass-intercardinal se" style={{ transform: 'rotate(135deg)' }}>
+                <span className="intercardinal-label">SE</span>
+              </div>
+              <div className="compass-intercardinal sw" style={{ transform: 'rotate(225deg)' }}>
+                <span className="intercardinal-label">SW</span>
+              </div>
+              <div className="compass-intercardinal nw" style={{ transform: 'rotate(315deg)' }}>
+                <span className="intercardinal-label">NW</span>
+              </div>
+              
+              {/* Modern tick marks */}
+              {[...Array(72)].map((_, i) => {
+                const isMajor = i % 18 === 0;
+                const isMinor = i % 9 === 0;
+                return (
+                  <div
+                    key={i}
+                    className={`compass-tick ${isMajor ? 'major' : isMinor ? 'minor' : ''}`}
+                    style={{ transform: `rotate(${i * 5}deg)` }}
+                  />
+                );
+              })}
             </div>
-            {/* Wind arrow - points where wind is going */}
+            
+            {/* Modern wind arrow */}
             <div
               className="wind-arrow"
               style={{ transform: `rotate(${windGoingDirection}deg)` }}
             >
-              <svg viewBox="0 0 30 75" className="arrow-svg" xmlns="http://www.w3.org/2000/svg">
+              <svg viewBox="0 0 100 100" className="arrow-svg" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                  <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="50%" stopColor="#0891b2" />
-                    <stop offset="100%" stopColor="#0e7490" />
+                  <linearGradient id="arrowGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="50%" stopColor="#2563eb" />
+                    <stop offset="100%" stopColor="#1e40af" />
                   </linearGradient>
-                  <filter id="arrowShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="1" stdDeviation="1" floodOpacity="0.3"/>
+                  <filter id="arrowGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
                   </filter>
                 </defs>
-                {/* Arrow shape - pointing up */}
+                {/* Modern arrow shape */}
                 <path
-                  d="M15 0 L30 22 L19 18 L19 75 L11 75 L11 18 L0 22 Z"
+                  d="M50 10 L65 45 L58 45 L58 90 L42 90 L42 45 L35 45 Z"
                   fill="url(#arrowGradient)"
-                  filter="url(#arrowShadow)"
+                  filter="url(#arrowGlow)"
+                  stroke="#1e40af"
+                  strokeWidth="1"
                 />
+                {/* Arrow tail */}
+                <circle cx="50" cy="50" r="4" fill="url(#arrowGradient)" />
               </svg>
             </div>
-            {/* Center circle */}
+            
+            {/* Modern center display */}
             <div className="compass-center">
-              <span className="direction-text">{compassDirection}</span>
-              <span className="degrees-text">{Math.round(direction)}°</span>
+              <div className="center-content">
+                <span className="direction-text">{compassDirection}</span>
+                <span className="degrees-text">{Math.round(direction)}°</span>
+              </div>
             </div>
           </div>
-          <div className="wind-labels">
-            <div className="wind-label from">
-              <span className="label-title">From</span>
-              <span className="label-value">{compassDirection}</span>
+          
+          {/* Modern info display */}
+          <div className="wind-info">
+            <div className="wind-info-item">
+              <span className="info-label">From</span>
+              <span className="info-value">{compassDirection}</span>
             </div>
-            <div className="wind-label to">
-              <span className="label-title">Going</span>
-              <span className="label-value">{directions[(directionIndex + 8) % 16]}</span>
+            <div className="wind-info-divider"></div>
+            <div className="wind-info-item">
+              <span className="info-label">To</span>
+              <span className="info-value">{directions[(directionIndex + 8) % 16]}</span>
             </div>
           </div>
         </div>
@@ -151,7 +194,19 @@ export const WindDisplay: React.FC<WindDisplayProps> = ({
           gap: 0.875rem;
         }
 
-        .wind-compass-card,
+        .wind-compass-card {
+          background: rgba(255, 255, 255, 0.98);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border-radius: 20px;
+          padding: 1.5rem;
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          position: relative;
+          overflow: hidden;
+          transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
         .wind-speed-card,
         .wind-gusts-card {
           background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%);
@@ -203,107 +258,160 @@ export const WindDisplay: React.FC<WindDisplayProps> = ({
           filter: saturate(1.2);
         }
 
-        /* Compass Styles */
+        /* Modern Compass Styles */
         .compass-container {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 1rem;
+          gap: 1.25rem;
         }
 
         .compass {
           position: relative;
-          width: 180px;
-          height: 180px;
+          width: 200px;
+          height: 200px;
         }
 
         .compass-rose {
           position: absolute;
           inset: 0;
           border-radius: 50%;
-          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
           box-shadow: 
-            inset 0 2px 10px rgba(0, 0, 0, 0.1),
-            0 4px 20px rgba(0, 0, 0, 0.1);
-          border: 3px solid #cbd5e1;
+            inset 0 0 0 2px rgba(226, 232, 240, 0.8),
+            0 8px 32px rgba(0, 0, 0, 0.08),
+            0 2px 8px rgba(0, 0, 0, 0.04);
+          border: 2px solid rgba(226, 232, 240, 0.6);
         }
 
-        .compass-point {
+        .compass-cardinal {
           position: absolute;
-          font-size: 0.75rem;
-          font-weight: 800;
-          color: #475569;
-          text-transform: uppercase;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          z-index: 2;
         }
 
-        .compass-point.north {
-          top: 8px;
+        .compass-cardinal.north {
+          top: 4px;
           left: 50%;
           transform: translateX(-50%);
+        }
+
+        .compass-cardinal.south {
+          bottom: 4px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        .compass-cardinal.east {
+          right: 4px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
+        .compass-cardinal.west {
+          left: 4px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
+        .cardinal-label {
+          font-size: 0.875rem;
+          font-weight: 800;
+          color: #1e293b;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.25rem;
+        }
+
+        .compass-cardinal.north .cardinal-label {
           color: #dc2626;
         }
 
-        .compass-point.south {
-          bottom: 8px;
+        .cardinal-line {
+          width: 2px;
+          height: 16px;
+          background: linear-gradient(180deg, #1e293b 0%, transparent 100%);
+        }
+
+        .compass-cardinal.south .cardinal-line {
+          background: linear-gradient(0deg, #1e293b 0%, transparent 100%);
+        }
+
+        .compass-cardinal.east .cardinal-line,
+        .compass-cardinal.west .cardinal-line {
+          width: 16px;
+          height: 2px;
+          background: linear-gradient(90deg, #1e293b 0%, transparent 100%);
+        }
+
+        .compass-cardinal.west .cardinal-line {
+          background: linear-gradient(270deg, #1e293b 0%, transparent 100%);
+        }
+
+        .compass-intercardinal {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform-origin: 0 0;
+          width: 100px;
+          height: 2px;
+        }
+
+        .intercardinal-label {
+          position: absolute;
+          top: -10px;
           left: 50%;
           transform: translateX(-50%);
+          font-size: 0.625rem;
+          font-weight: 700;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          background: rgba(255, 255, 255, 0.9);
+          padding: 0 0.25rem;
+          border-radius: 4px;
         }
 
-        .compass-point.east {
-          right: 8px;
-          top: 50%;
-          transform: translateY(-50%);
-        }
-
-        .compass-point.west {
-          left: 8px;
-          top: 50%;
-          transform: translateY(-50%);
-        }
-
-        .tick {
+        .compass-tick {
           position: absolute;
-          top: 6px;
+          top: 8px;
           left: 50%;
-          width: 2px;
-          transform-origin: 0 84px;
+          width: 1px;
+          transform-origin: 0 92px;
         }
 
-        .tick::after {
+        .compass-tick::after {
           content: '';
           display: block;
-          width: 2px;
-          background: #94a3b8;
+          width: 1px;
+          height: 6px;
+          background: #cbd5e1;
         }
 
-        .tick.major::after {
+        .compass-tick.major::after {
           height: 12px;
-          background: #475569;
-          width: 3px;
+          background: #64748b;
+          width: 2px;
           margin-left: -0.5px;
         }
 
-        .tick.minor::after {
+        .compass-tick.minor::after {
           height: 8px;
-          background: #64748b;
-        }
-
-        .tick.small::after {
-          height: 4px;
-          background: #cbd5e1;
+          background: #94a3b8;
         }
 
         .wind-arrow {
           position: absolute;
           top: 50%;
           left: 50%;
-          width: 30px;
-          height: 75px;
-          margin-left: -15px;
-          margin-top: -75px;
+          width: 40px;
+          height: 80px;
+          margin-left: -20px;
+          margin-top: -80px;
           transform-origin: center bottom;
-          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+          transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
           z-index: 5;
         }
 
@@ -317,66 +425,78 @@ export const WindDisplay: React.FC<WindDisplayProps> = ({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 60px;
-          height: 60px;
+          width: 72px;
+          height: 72px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+          box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.12),
+            inset 0 1px 2px rgba(255, 255, 255, 0.8);
+          border: 2px solid rgba(226, 232, 240, 0.8);
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
           z-index: 10;
         }
 
+        .center-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.125rem;
+        }
+
         .direction-text {
-          font-size: 0.875rem;
+          font-size: 1rem;
           font-weight: 800;
           color: #1e293b;
           line-height: 1;
+          letter-spacing: 0.02em;
         }
 
         .degrees-text {
-          font-size: 0.625rem;
+          font-size: 0.6875rem;
           font-weight: 600;
           color: #64748b;
           line-height: 1;
-          margin-top: 2px;
         }
 
-        .wind-labels {
+        .wind-info {
           display: flex;
-          gap: 2rem;
-          justify-content: center;
+          align-items: center;
+          gap: 1rem;
+          padding: 0.875rem 1.25rem;
+          background: rgba(255, 255, 255, 0.6);
+          border-radius: 12px;
+          border: 1px solid rgba(226, 232, 240, 0.8);
         }
 
-        .wind-label {
+        .wind-info-item {
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 0.25rem;
         }
 
-        .label-title {
+        .info-label {
           font-size: 0.625rem;
           font-weight: 600;
           color: #94a3b8;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.08em;
         }
 
-        .label-value {
-          font-size: 1rem;
+        .info-value {
+          font-size: 1.125rem;
           font-weight: 700;
           color: #1e293b;
+          letter-spacing: 0.02em;
         }
 
-        .wind-label.from .label-value {
-          color: #dc2626;
-        }
-
-        .wind-label.to .label-value {
-          color: #06b6d4;
+        .wind-info-divider {
+          width: 1px;
+          height: 32px;
+          background: linear-gradient(180deg, transparent 0%, #e2e8f0 50%, transparent 100%);
         }
 
         /* Wind Speed Styles */
@@ -425,6 +545,46 @@ export const WindDisplay: React.FC<WindDisplayProps> = ({
           font-weight: 600;
         }
         
+        /* Mobile adjustments */
+        @media (max-width: 640px) {
+          .wind-compass-card {
+            padding: 1.25rem;
+          }
+          .compass {
+            width: 180px;
+            height: 180px;
+          }
+          .compass-tick {
+            transform-origin: 0 82px;
+          }
+          .compass-center {
+            width: 64px;
+            height: 64px;
+          }
+          .direction-text {
+            font-size: 0.875rem;
+          }
+          .degrees-text {
+            font-size: 0.625rem;
+          }
+          .cardinal-label {
+            font-size: 0.75rem;
+          }
+          .wind-arrow {
+            width: 36px;
+            height: 72px;
+            margin-left: -18px;
+            margin-top: -72px;
+          }
+          .wind-info {
+            padding: 0.75rem 1rem;
+            gap: 0.875rem;
+          }
+          .info-value {
+            font-size: 1rem;
+          }
+        }
+
         /* Tablet and up */
         @media (min-width: 768px) {
           .wind-display {
@@ -437,46 +597,57 @@ export const WindDisplay: React.FC<WindDisplayProps> = ({
           }
 
           .compass {
-            width: 220px;
-            height: 220px;
+            width: 240px;
+            height: 240px;
           }
 
-          .tick {
-            transform-origin: 0 104px;
-            top: 6px;
+          .compass-tick {
+            transform-origin: 0 112px;
+            top: 8px;
           }
 
           .compass-center {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
           }
 
           .direction-text {
-            font-size: 1rem;
+            font-size: 1.125rem;
           }
 
           .degrees-text {
             font-size: 0.75rem;
           }
 
-          .compass-point {
-            font-size: 0.875rem;
+          .cardinal-label {
+            font-size: 1rem;
           }
 
-          .compass-point.north {
-            top: 10px;
+          .compass-cardinal.north {
+            top: 6px;
           }
 
-          .compass-point.south {
-            bottom: 10px;
+          .compass-cardinal.south {
+            bottom: 6px;
           }
 
-          .compass-point.east {
-            right: 10px;
+          .compass-cardinal.east {
+            right: 6px;
           }
 
-          .compass-point.west {
-            left: 10px;
+          .compass-cardinal.west {
+            left: 6px;
+          }
+
+          .wind-arrow {
+            width: 48px;
+            height: 96px;
+            margin-left: -24px;
+            margin-top: -96px;
+          }
+
+          .info-value {
+            font-size: 1.25rem;
           }
 
           .wind-speed-card,

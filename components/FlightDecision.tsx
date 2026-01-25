@@ -98,7 +98,8 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
         <div className="minimums-content">
           <p className="minimums-description">{aircraft.description}</p>
           
-          <table className="minimums-table">
+          {/* Desktop Table View */}
+          <table className="minimums-table desktop-only">
             <thead>
               <tr>
                 <th>Condition</th>
@@ -140,6 +141,99 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
               </tr>
             </tbody>
           </table>
+
+          {/* Mobile Card View */}
+          <div className="minimums-cards mobile-only">
+            <div className="minimums-card">
+              <div className="minimums-card-header">💨 Wind Speed</div>
+              <div className="minimums-card-values">
+                <div className="minimums-value good">
+                  <span className="value-label">Good:</span>
+                  <span className="value-text">&lt; {limits.windGood} kts</span>
+                </div>
+                <div className="minimums-value marginal">
+                  <span className="value-label">Marginal:</span>
+                  <span className="value-text">{limits.windGood}-{limits.windMarginal} kts</span>
+                </div>
+                <div className="minimums-value poor">
+                  <span className="value-label">Poor:</span>
+                  <span className="value-text">&gt; {limits.windMarginal} kts</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="minimums-card">
+              <div className="minimums-card-header">👁️ Visibility</div>
+              <div className="minimums-card-values">
+                <div className="minimums-value good">
+                  <span className="value-label">Good:</span>
+                  <span className="value-text">&gt; {limits.visGood / 1000} km</span>
+                </div>
+                <div className="minimums-value marginal">
+                  <span className="value-label">Marginal:</span>
+                  <span className="value-text">{limits.visMarginal / 1000}-{limits.visGood / 1000} km</span>
+                </div>
+                <div className="minimums-value poor">
+                  <span className="value-label">Poor:</span>
+                  <span className="value-text">&lt; {limits.visMarginal / 1000} km</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="minimums-card">
+              <div className="minimums-card-header">☁️ Cloud Base</div>
+              <div className="minimums-card-values">
+                <div className="minimums-value good">
+                  <span className="value-label">Good:</span>
+                  <span className="value-text">&gt; {limits.cloudBaseGood} ft</span>
+                </div>
+                <div className="minimums-value marginal">
+                  <span className="value-label">Marginal:</span>
+                  <span className="value-text">{limits.cloudBaseMarginal}-{limits.cloudBaseGood} ft</span>
+                </div>
+                <div className="minimums-value poor">
+                  <span className="value-label">Poor:</span>
+                  <span className="value-text">&lt; {limits.cloudBaseMarginal} ft</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="minimums-card">
+              <div className="minimums-card-header">🌫️ Cloud Cover</div>
+              <div className="minimums-card-values">
+                <div className="minimums-value good">
+                  <span className="value-label">Good:</span>
+                  <span className="value-text">&lt; {limits.cloudCoverGood}%</span>
+                </div>
+                <div className="minimums-value marginal">
+                  <span className="value-label">Marginal:</span>
+                  <span className="value-text">{limits.cloudCoverGood}-{limits.cloudCoverMarginal}%</span>
+                </div>
+                <div className="minimums-value poor">
+                  <span className="value-label">Poor:</span>
+                  <span className="value-text">&gt; {limits.cloudCoverMarginal}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="minimums-card">
+              <div className="minimums-card-header">🌧️ Precipitation</div>
+              <div className="minimums-card-values">
+                <div className="minimums-value good">
+                  <span className="value-label">Good:</span>
+                  <span className="value-text">{limits.precipGood === 0 ? 'None' : `< ${limits.precipGood} mm/hr`}</span>
+                </div>
+                <div className="minimums-value marginal">
+                  <span className="value-label">Marginal:</span>
+                  <span className="value-text">&lt; {limits.precipMarginal} mm/hr</span>
+                </div>
+                <div className="minimums-value poor">
+                  <span className="value-label">Poor:</span>
+                  <span className="value-text">&gt; {limits.precipMarginal} mm/hr</span>
+                </div>
+              </div>
+            </div>
+          </div>
           
           <p className="minimums-disclaimer">
             ⚠️ These are suggested minimums only. Always consult your aircraft POH and apply pilot-in-command judgement.
@@ -235,13 +329,79 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
           margin: 0;
           line-height: 1.5;
         }
-        @media (max-width: 640px) {
-          .minimums-table {
-            font-size: 0.75rem;
+        
+        /* Mobile Card View */
+        .minimums-cards {
+          display: none;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
+        }
+        .minimums-card {
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 12px;
+          padding: 1rem;
+          border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        .minimums-card-header {
+          font-weight: 700;
+          font-size: 0.9375rem;
+          color: #1e293b;
+          margin-bottom: 0.75rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+        }
+        .minimums-card-values {
+          display: flex;
+          flex-direction: column;
+          gap: 0.625rem;
+        }
+        .minimums-value {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.625rem;
+          border-radius: 8px;
+          font-size: 0.8125rem;
+        }
+        .minimums-value.good {
+          background: rgba(5, 150, 105, 0.1);
+          color: #059669;
+        }
+        .minimums-value.marginal {
+          background: rgba(217, 119, 6, 0.1);
+          color: #d97706;
+        }
+        .minimums-value.poor {
+          background: rgba(220, 38, 38, 0.1);
+          color: #dc2626;
+        }
+        .value-label {
+          font-weight: 600;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .value-text {
+          font-weight: 700;
+          font-size: 0.875rem;
+        }
+        
+        /* Responsive: Show table on desktop, cards on mobile */
+        @media (max-width: 768px) {
+          .desktop-only {
+            display: none;
           }
-          .minimums-table th,
-          .minimums-table td {
-            padding: 0.5rem 0.25rem;
+          .mobile-only {
+            display: flex;
+          }
+        }
+        @media (min-width: 769px) {
+          .desktop-only {
+            display: table;
+          }
+          .mobile-only {
+            display: none;
           }
         }
       `}</style>
@@ -425,115 +585,180 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
         <h2>Flight Decision</h2>
         <span className="aircraft-type-badge">{AIRCRAFT_LABELS[aircraftType]}</span>
       </div>
-      <div className="decision-status" style={{ backgroundColor: decision.color + '20', borderColor: decision.color }}>
-        <div className="decision-emoji">{decision.emoji}</div>
+      <div className="decision-status" style={{ 
+        background: `linear-gradient(135deg, ${decision.color}15 0%, ${decision.color}08 100%)`,
+        borderColor: decision.color,
+        boxShadow: `0 8px 24px ${decision.color}20`
+      }}>
+        <div className="decision-emoji-wrapper">
+          <div className="decision-emoji">{decision.emoji}</div>
+        </div>
         <div className="decision-text">
           <div className="decision-title">{decision.text}</div>
           <div className="decision-message">{decision.message}</div>
         </div>
       </div>
       <div className="decision-reasoning" style={{ borderLeftColor: decision.color }}>
-        <h3>Decision Reasoning</h3>
-        <p>{decision.reasoning}</p>
+        <div className="reasoning-icon">💭</div>
+        <div className="reasoning-content">
+          <h3>Decision Reasoning</h3>
+          <p>{decision.reasoning}</p>
+        </div>
       </div>
 
       <MinimumsPanel aircraftType={aircraftType} limits={limits} />
 
       <div className="criteria-explanation">
-        <h3>Detailed Criteria Analysis</h3>
+        <div className="criteria-header">
+          <h3>📊 Detailed Criteria Analysis</h3>
+        </div>
         <p className="explanation-intro">
           Each condition is evaluated against VFR flight standards. The overall decision is based on the combination of all factors.
         </p>
         
         <div className="decision-criteria">
-          <div className="criterion-detailed">
-            <div className="criterion-header">
-              <span className="criterion-label">Wind Speed</span>
-              <span className={`criterion-status ${criteria.windSpeed.good ? 'good' : criteria.windSpeed.marginal ? 'marginal' : 'poor'}`}>
-                {criteria.windSpeed.good ? '✅ Good' : criteria.windSpeed.marginal ? '⚠️ Marginal' : '❌ Poor'}
-              </span>
-            </div>
-            <div className="criterion-value-large">
-              {windSpeedKnots.toFixed(0)} kts
-              <span className="criterion-value-secondary">({windSpeedMph.toFixed(0)} mph)</span>
-            </div>
-            <div className="criterion-threshold">
-              <strong>Threshold:</strong> {getCriterionDetails('windSpeed', criteria.windSpeed, windSpeedKnots, 'kts').threshold}
-            </div>
-            <div className="criterion-explanation-text">
-              {getCriterionDetails('windSpeed', criteria.windSpeed, windSpeedKnots, 'kts').explanation}
-            </div>
-          </div>
-
-          <div className="criterion-detailed">
-            <div className="criterion-header">
-              <span className="criterion-label">Visibility</span>
-              <span className={`criterion-status ${criteria.visibility.good ? 'good' : criteria.visibility.marginal ? 'marginal' : 'poor'}`}>
-                {criteria.visibility.good ? '✅ Good' : criteria.visibility.marginal ? '⚠️ Marginal' : '❌ Poor'}
-              </span>
-            </div>
-            <div className="criterion-value-large">
-              {(visibilityFeet / 1000).toFixed(1)} km ({(visibilityFeet / 5280).toFixed(1)} SM)
-            </div>
-            <div className="criterion-threshold">
-              <strong>Threshold:</strong> {getCriterionDetails('visibility', criteria.visibility, visibilityFeet, 'ft').threshold}
-            </div>
-            <div className="criterion-explanation-text">
-              {getCriterionDetails('visibility', criteria.visibility, visibilityFeet, 'ft').explanation}
+          <div className={`criterion-detailed ${criteria.windSpeed.good ? 'good' : criteria.windSpeed.marginal ? 'marginal' : 'poor'}`}>
+            <div className="criterion-icon">💨</div>
+            <div className="criterion-content">
+              <div className="criterion-header">
+                <span className="criterion-label">Wind Speed</span>
+                <span className={`criterion-status ${criteria.windSpeed.good ? 'good' : criteria.windSpeed.marginal ? 'marginal' : 'poor'}`}>
+                  {criteria.windSpeed.good ? '✅ Good' : criteria.windSpeed.marginal ? '⚠️ Marginal' : '❌ Poor'}
+                </span>
+              </div>
+              <div className="criterion-value-large">
+                {windSpeedKnots.toFixed(0)} <span className="criterion-unit">kts</span>
+                <span className="criterion-value-secondary">({windSpeedMph.toFixed(0)} mph)</span>
+              </div>
+              <div className="criterion-progress-bar">
+                <div 
+                  className={`criterion-progress ${criteria.windSpeed.good ? 'good' : criteria.windSpeed.marginal ? 'marginal' : 'poor'}`}
+                  style={{ 
+                    width: `${Math.min(100, (windSpeedKnots / limits.windMarginal) * 100)}%` 
+                  }}
+                />
+              </div>
+              <div className="criterion-threshold">
+                <strong>Threshold:</strong> {getCriterionDetails('windSpeed', criteria.windSpeed, windSpeedKnots, 'kts').threshold}
+              </div>
+              <div className="criterion-explanation-text">
+                {getCriterionDetails('windSpeed', criteria.windSpeed, windSpeedKnots, 'kts').explanation}
+              </div>
             </div>
           </div>
 
-          <div className="criterion-detailed">
-            <div className="criterion-header">
-              <span className="criterion-label">Cloud Base</span>
-              <span className={`criterion-status ${criteria.cloudBase.good ? 'good' : criteria.cloudBase.marginal ? 'marginal' : 'poor'}`}>
-                {criteria.cloudBase.good ? '✅ Good' : criteria.cloudBase.marginal ? '⚠️ Marginal' : '❌ Poor'}
-              </span>
-            </div>
-            <div className="criterion-value-large">
-              {cloudBaseFeet > 0 ? `${Math.round(cloudBaseFeet)} ft` : 'N/A'}
-            </div>
-            <div className="criterion-threshold">
-              <strong>Threshold:</strong> {getCriterionDetails('cloudBase', criteria.cloudBase, cloudBaseFeet, 'ft').threshold}
-            </div>
-            <div className="criterion-explanation-text">
-              {getCriterionDetails('cloudBase', criteria.cloudBase, cloudBaseFeet, 'ft').explanation}
-            </div>
-          </div>
-
-          <div className="criterion-detailed">
-            <div className="criterion-header">
-              <span className="criterion-label">Cloud Cover</span>
-              <span className={`criterion-status ${criteria.cloudCover.good ? 'good' : criteria.cloudCover.marginal ? 'marginal' : 'poor'}`}>
-                {criteria.cloudCover.good ? '✅ Good' : criteria.cloudCover.marginal ? '⚠️ Marginal' : '❌ Poor'}
-              </span>
-            </div>
-            <div className="criterion-value-large">
-              {Math.round(cloudCover)}%
-            </div>
-            <div className="criterion-threshold">
-              <strong>Threshold:</strong> {getCriterionDetails('cloudCover', criteria.cloudCover, cloudCover, '%').threshold}
-            </div>
-            <div className="criterion-explanation-text">
-              {getCriterionDetails('cloudCover', criteria.cloudCover, cloudCover, '%').explanation}
+          <div className={`criterion-detailed ${criteria.visibility.good ? 'good' : criteria.visibility.marginal ? 'marginal' : 'poor'}`}>
+            <div className="criterion-icon">👁️</div>
+            <div className="criterion-content">
+              <div className="criterion-header">
+                <span className="criterion-label">Visibility</span>
+                <span className={`criterion-status ${criteria.visibility.good ? 'good' : criteria.visibility.marginal ? 'marginal' : 'poor'}`}>
+                  {criteria.visibility.good ? '✅ Good' : criteria.visibility.marginal ? '⚠️ Marginal' : '❌ Poor'}
+                </span>
+              </div>
+              <div className="criterion-value-large">
+                {(visibilityFeet / 1000).toFixed(1)} <span className="criterion-unit">km</span>
+                <span className="criterion-value-secondary">({(visibilityFeet / 5280).toFixed(1)} SM)</span>
+              </div>
+              <div className="criterion-progress-bar">
+                <div 
+                  className={`criterion-progress ${criteria.visibility.good ? 'good' : criteria.visibility.marginal ? 'marginal' : 'poor'}`}
+                  style={{ 
+                    width: `${Math.min(100, (visibilityFeet / limits.visGood) * 100)}%` 
+                  }}
+                />
+              </div>
+              <div className="criterion-threshold">
+                <strong>Threshold:</strong> {getCriterionDetails('visibility', criteria.visibility, visibilityFeet, 'ft').threshold}
+              </div>
+              <div className="criterion-explanation-text">
+                {getCriterionDetails('visibility', criteria.visibility, visibilityFeet, 'ft').explanation}
+              </div>
             </div>
           </div>
 
-          <div className="criterion-detailed">
-            <div className="criterion-header">
-              <span className="criterion-label">Precipitation</span>
-              <span className={`criterion-status ${criteria.precipitation.good ? 'good' : criteria.precipitation.marginal ? 'marginal' : 'poor'}`}>
-                {criteria.precipitation.good ? '✅ Good' : criteria.precipitation.marginal ? '⚠️ Marginal' : '❌ Poor'}
-              </span>
+          <div className={`criterion-detailed ${criteria.cloudBase.good ? 'good' : criteria.cloudBase.marginal ? 'marginal' : 'poor'}`}>
+            <div className="criterion-icon">☁️</div>
+            <div className="criterion-content">
+              <div className="criterion-header">
+                <span className="criterion-label">Cloud Base</span>
+                <span className={`criterion-status ${criteria.cloudBase.good ? 'good' : criteria.cloudBase.marginal ? 'marginal' : 'poor'}`}>
+                  {criteria.cloudBase.good ? '✅ Good' : criteria.cloudBase.marginal ? '⚠️ Marginal' : '❌ Poor'}
+                </span>
+              </div>
+              <div className="criterion-value-large">
+                {cloudBaseFeet > 0 ? `${Math.round(cloudBaseFeet)}` : 'N/A'} <span className="criterion-unit">ft</span>
+              </div>
+              <div className="criterion-progress-bar">
+                <div 
+                  className={`criterion-progress ${criteria.cloudBase.good ? 'good' : criteria.cloudBase.marginal ? 'marginal' : 'poor'}`}
+                  style={{ 
+                    width: `${Math.min(100, cloudBaseFeet > 0 ? (cloudBaseFeet / limits.cloudBaseGood) * 100 : 0)}%` 
+                  }}
+                />
+              </div>
+              <div className="criterion-threshold">
+                <strong>Threshold:</strong> {getCriterionDetails('cloudBase', criteria.cloudBase, cloudBaseFeet, 'ft').threshold}
+              </div>
+              <div className="criterion-explanation-text">
+                {getCriterionDetails('cloudBase', criteria.cloudBase, cloudBaseFeet, 'ft').explanation}
+              </div>
             </div>
-            <div className="criterion-value-large">
-              {precipitation.toFixed(1)} mm/hr
+          </div>
+
+          <div className={`criterion-detailed ${criteria.cloudCover.good ? 'good' : criteria.cloudCover.marginal ? 'marginal' : 'poor'}`}>
+            <div className="criterion-icon">🌫️</div>
+            <div className="criterion-content">
+              <div className="criterion-header">
+                <span className="criterion-label">Cloud Cover</span>
+                <span className={`criterion-status ${criteria.cloudCover.good ? 'good' : criteria.cloudCover.marginal ? 'marginal' : 'poor'}`}>
+                  {criteria.cloudCover.good ? '✅ Good' : criteria.cloudCover.marginal ? '⚠️ Marginal' : '❌ Poor'}
+                </span>
+              </div>
+              <div className="criterion-value-large">
+                {Math.round(cloudCover)}<span className="criterion-unit">%</span>
+              </div>
+              <div className="criterion-progress-bar">
+                <div 
+                  className={`criterion-progress ${criteria.cloudCover.good ? 'good' : criteria.cloudCover.marginal ? 'marginal' : 'poor'}`}
+                  style={{ width: `${cloudCover}%` }}
+                />
+              </div>
+              <div className="criterion-threshold">
+                <strong>Threshold:</strong> {getCriterionDetails('cloudCover', criteria.cloudCover, cloudCover, '%').threshold}
+              </div>
+              <div className="criterion-explanation-text">
+                {getCriterionDetails('cloudCover', criteria.cloudCover, cloudCover, '%').explanation}
+              </div>
             </div>
-            <div className="criterion-threshold">
-              <strong>Threshold:</strong> {getCriterionDetails('precipitation', criteria.precipitation, precipitation, 'mm').threshold}
-            </div>
-            <div className="criterion-explanation-text">
-              {getCriterionDetails('precipitation', criteria.precipitation, precipitation, 'mm').explanation}
+          </div>
+
+          <div className={`criterion-detailed ${criteria.precipitation.good ? 'good' : criteria.precipitation.marginal ? 'marginal' : 'poor'}`}>
+            <div className="criterion-icon">🌧️</div>
+            <div className="criterion-content">
+              <div className="criterion-header">
+                <span className="criterion-label">Precipitation</span>
+                <span className={`criterion-status ${criteria.precipitation.good ? 'good' : criteria.precipitation.marginal ? 'marginal' : 'poor'}`}>
+                  {criteria.precipitation.good ? '✅ Good' : criteria.precipitation.marginal ? '⚠️ Marginal' : '❌ Poor'}
+                </span>
+              </div>
+              <div className="criterion-value-large">
+                {precipitation.toFixed(1)} <span className="criterion-unit">mm/hr</span>
+              </div>
+              <div className="criterion-progress-bar">
+                <div 
+                  className={`criterion-progress ${criteria.precipitation.good ? 'good' : criteria.precipitation.marginal ? 'marginal' : 'poor'}`}
+                  style={{ 
+                    width: `${Math.min(100, limits.precipMarginal > 0 ? (precipitation / limits.precipMarginal) * 100 : 0)}%` 
+                  }}
+                />
+              </div>
+              <div className="criterion-threshold">
+                <strong>Threshold:</strong> {getCriterionDetails('precipitation', criteria.precipitation, precipitation, 'mm').threshold}
+              </div>
+              <div className="criterion-explanation-text">
+                {getCriterionDetails('precipitation', criteria.precipitation, precipitation, 'mm').explanation}
+              </div>
             </div>
           </div>
         </div>
@@ -544,7 +769,7 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border-radius: 24px;
-          padding: 1.5rem;
+          padding: 1.25rem;
           box-shadow: 
             0 4px 30px rgba(0, 0, 0, 0.1),
             inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -556,11 +781,11 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
           flex-wrap: wrap;
         }
         .decision-header h2 {
-          font-size: 1.375rem;
+          font-size: 1.25rem;
           font-weight: 800;
           color: #1e293b;
           margin: 0;
@@ -581,122 +806,176 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
         .decision-status {
           display: flex;
           align-items: center;
-          gap: 1.25rem;
-          padding: 1.25rem;
-          border-radius: 16px;
-          border: 2px solid;
-          margin-bottom: 1.5rem;
+          gap: 1rem;
+          padding: 1.5rem;
+          border-radius: 20px;
+          border: 3px solid;
+          margin-bottom: 1.25rem;
           position: relative;
           overflow: hidden;
         }
-        .decision-status::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          opacity: 0.05;
-          pointer-events: none;
+        .decision-emoji-wrapper {
+          flex-shrink: 0;
+          width: 64px;
+          height: 64px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.6);
+          border-radius: 16px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .decision-emoji {
           font-size: 2.5rem;
           filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+          line-height: 1;
         }
         .decision-text {
           flex: 1;
+          min-width: 0;
         }
         .decision-title {
-          font-size: 1.25rem;
-          font-weight: 700;
-          margin-bottom: 0.375rem;
+          font-size: 1.5rem;
+          font-weight: 800;
+          margin-bottom: 0.5rem;
           color: #1e293b;
+          letter-spacing: -0.02em;
         }
         .decision-message {
-          font-size: 0.9rem;
+          font-size: 0.9375rem;
           color: #64748b;
           line-height: 1.5;
+          font-weight: 500;
         }
         .decision-reasoning {
-          background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
+          background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
           padding: 1.25rem;
           border-radius: 16px;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
           border-left: 4px solid;
+          display: flex;
+          gap: 1rem;
+          align-items: flex-start;
         }
-        .decision-reasoning h3 {
+        .reasoning-icon {
+          font-size: 1.5rem;
+          flex-shrink: 0;
+          margin-top: 0.125rem;
+        }
+        .reasoning-content {
+          flex: 1;
+        }
+        .reasoning-content h3 {
           font-size: 1rem;
           font-weight: 700;
           color: #1e293b;
-          margin-bottom: 0.625rem;
+          margin-bottom: 0.5rem;
         }
-        .decision-reasoning p {
+        .reasoning-content p {
           color: #64748b;
           line-height: 1.6;
-          font-size: 0.9rem;
+          font-size: 0.875rem;
+          margin: 0;
         }
         .criteria-explanation {
           margin-top: 1.5rem;
+        }
+        .criteria-header {
+          margin-bottom: 1rem;
         }
         .criteria-explanation h3 {
           font-size: 1.125rem;
           font-weight: 700;
           color: #1e293b;
-          margin-bottom: 0.625rem;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
         .explanation-intro {
           color: #64748b;
           font-size: 0.875rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
           padding-bottom: 1rem;
           border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+          line-height: 1.6;
+        }
+        @media (max-width: 640px) {
+          .criteria-explanation h3 {
+            font-size: 1rem;
+          }
+          .explanation-intro {
+            font-size: 0.8125rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+          }
         }
         .decision-criteria {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          display: flex;
+          flex-direction: column;
           gap: 1rem;
         }
         .criterion-detailed {
-          background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+          background: rgba(255, 255, 255, 0.9);
           border-radius: 16px;
           padding: 1.25rem;
-          border: 1px solid rgba(0, 0, 0, 0.04);
-          transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+          border: 2px solid transparent;
+          transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
+          display: flex;
+          gap: 1rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
-        .criterion-detailed::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
-          opacity: 0;
-          transition: opacity 150ms;
+        .criterion-detailed.good {
+          border-color: rgba(5, 150, 105, 0.2);
+          background: linear-gradient(135deg, rgba(209, 250, 229, 0.3) 0%, rgba(255, 255, 255, 0.9) 100%);
         }
-        .criterion-detailed:hover::before {
-          opacity: 1;
+        .criterion-detailed.marginal {
+          border-color: rgba(217, 119, 6, 0.2);
+          background: linear-gradient(135deg, rgba(254, 243, 199, 0.3) 0%, rgba(255, 255, 255, 0.9) 100%);
+        }
+        .criterion-detailed.poor {
+          border-color: rgba(220, 38, 38, 0.2);
+          background: linear-gradient(135deg, rgba(254, 226, 226, 0.3) 0%, rgba(255, 255, 255, 0.9) 100%);
+        }
+        .criterion-icon {
+          font-size: 2rem;
+          flex-shrink: 0;
+          width: 56px;
+          height: 56px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .criterion-content {
+          flex: 1;
+          min-width: 0;
         }
         .criterion-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 0.875rem;
+          margin-bottom: 0.75rem;
+          flex-wrap: wrap;
+          gap: 0.5rem;
         }
         .criterion-label {
-          font-size: 0.8125rem;
+          font-size: 0.875rem;
           font-weight: 700;
           color: #1e293b;
           text-transform: uppercase;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.05em;
         }
         .criterion-status {
           font-size: 0.75rem;
           font-weight: 700;
-          padding: 0.375rem 0.875rem;
+          padding: 0.375rem 0.75rem;
           border-radius: 9999px;
+          white-space: nowrap;
         }
         .criterion-status.good {
           background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
@@ -711,46 +990,124 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
           color: #991b1b;
         }
         .criterion-value-large {
-          font-size: 1.625rem;
+          font-size: 1.75rem;
           font-weight: 800;
           color: #1e293b;
-          margin-bottom: 0.625rem;
+          margin-bottom: 0.75rem;
           letter-spacing: -0.02em;
+          line-height: 1.2;
+        }
+        .criterion-unit {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #64748b;
+          margin-left: 0.25rem;
         }
         .criterion-value-secondary {
           display: block;
-          font-size: 0.9rem;
+          font-size: 0.8125rem;
           font-weight: 500;
           color: #64748b;
           margin-top: 0.25rem;
         }
+        .criterion-progress-bar {
+          width: 100%;
+          height: 6px;
+          background: rgba(0, 0, 0, 0.08);
+          border-radius: 9999px;
+          overflow: hidden;
+          margin-bottom: 0.75rem;
+        }
+        .criterion-progress {
+          height: 100%;
+          border-radius: 9999px;
+          transition: width 300ms ease-out;
+        }
+        .criterion-progress.good {
+          background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }
+        .criterion-progress.marginal {
+          background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+        .criterion-progress.poor {
+          background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
         .criterion-threshold {
           font-size: 0.8125rem;
           color: #64748b;
-          margin-bottom: 0.375rem;
+          margin-bottom: 0.5rem;
         }
         .criterion-threshold strong {
           color: #1e293b;
+          font-weight: 600;
         }
         .criterion-explanation-text {
           font-size: 0.8125rem;
           color: #64748b;
           line-height: 1.5;
           padding-top: 0.75rem;
-          border-top: 1px solid #e5e7eb;
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
         }
         @media (max-width: 640px) {
-          .decision-status {
-            flex-direction: column;
-            text-align: center;
+          .flight-decision {
+            padding: 1rem;
+            border-radius: 20px;
           }
-          .decision-criteria {
-            grid-template-columns: 1fr;
+          .decision-header h2 {
+            font-size: 1.125rem;
+          }
+          .decision-status {
+            flex-direction: row;
+            padding: 1.25rem;
+            gap: 0.875rem;
+          }
+          .decision-emoji-wrapper {
+            width: 56px;
+            height: 56px;
+          }
+          .decision-emoji {
+            font-size: 2rem;
+          }
+          .decision-title {
+            font-size: 1.25rem;
+          }
+          .decision-message {
+            font-size: 0.875rem;
+          }
+          .decision-reasoning {
+            flex-direction: row;
+            padding: 1rem;
+            gap: 0.75rem;
+          }
+          .reasoning-icon {
+            font-size: 1.25rem;
+          }
+          .criterion-detailed {
+            padding: 1rem;
+            gap: 0.875rem;
+          }
+          .criterion-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.75rem;
+          }
+          .criterion-value-large {
+            font-size: 1.5rem;
           }
           .criterion-header {
             flex-direction: column;
             align-items: flex-start;
             gap: 0.5rem;
+          }
+          .criterion-label {
+            font-size: 0.8125rem;
+          }
+        }
+        @media (min-width: 641px) {
+          .decision-criteria {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
           }
         }
       `}</style>

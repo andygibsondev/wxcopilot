@@ -11,6 +11,7 @@ import { FlightDecision } from '@/components/FlightDecision';
 import { MetarTafPanel } from '@/components/MetarTafPanel';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { AirfieldMap } from '@/components/AirfieldMap';
+import { AddToHomeScreen } from '@/components/AddToHomeScreen';
 
 // Generate day options for the next 7 days
 function getDayOptions() {
@@ -286,6 +287,56 @@ export default function Home() {
       setIsPanelCollapsed(true); // Collapse the panel after auto-search
     }
   }, [isAppLoading, prefsLoaded, shouldAutoFetch, fetchWeather]);
+
+  // Scroll to top of decision panel when search criteria changes
+  const prevSearchCriteriaRef = useRef<{
+    aerodrome: string;
+    day: number | null;
+    hour: number;
+    aircraft: AircraftType;
+  } | null>(null);
+
+  useEffect(() => {
+    // Only scroll if weather data exists (panels are rendered)
+    if (weatherData && swipeContainerRef.current) {
+      const currentCriteria = {
+        aerodrome: selectedAerodrome.name,
+        day: selectedDay,
+        hour: selectedHour,
+        aircraft: aircraftType,
+      };
+
+      // Check if search criteria actually changed (not initial load)
+      if (prevSearchCriteriaRef.current) {
+        const prev = prevSearchCriteriaRef.current;
+        const hasChanged = 
+          prev.aerodrome !== currentCriteria.aerodrome ||
+          prev.day !== currentCriteria.day ||
+          prev.hour !== currentCriteria.hour ||
+          prev.aircraft !== currentCriteria.aircraft;
+
+        if (hasChanged) {
+          // Scroll to decision panel (index 0)
+          swipeContainerRef.current.scrollTo({
+            left: 0,
+            behavior: 'smooth'
+          });
+          
+          // Scroll the decision panel to top
+          const decisionPanel = swipeContainerRef.current.children[0] as HTMLElement;
+          if (decisionPanel) {
+            decisionPanel.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+          
+          // Update active panel indicator
+          setActivePanel(0);
+        }
+      }
+
+      // Update the ref for next comparison
+      prevSearchCriteriaRef.current = currentCriteria;
+    }
+  }, [selectedAerodrome, selectedDay, selectedHour, aircraftType, weatherData]);
 
   const currentWeather = weatherData?.current_weather;
   const hourly = weatherData?.hourly;
@@ -676,46 +727,93 @@ export default function Home() {
               </section>
               <div className="weather-overview">
                 <div className="location-info">
-                  <h3>{selectedAerodrome.name}</h3>
-                  {selectedAerodrome.icao && (
-                    <p className="icao-code">{selectedAerodrome.icao}</p>
-                  )}
-                  <p className="timestamp">
-                    {isPlannedTime ? (
-                      <>
-                        <strong>Planned:</strong>{' '}
-                        {plannedFlightTime ? new Date(plannedFlightTime).toLocaleString('en-GB', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }) : 'N/A'}
-                        {isAccurateForecast && <span className="forecast-accurate-note"> ✅</span>}
-                        {!isAccurateForecast && timeDifference !== null && timeDifference > 0 && (
-                          <span className="forecast-warning-note"> ⚠️ ±{timeDifference.toFixed(1)}h</span>
+                  <div className="location-header">
+                    <div className="location-icon">📍</div>
+                    <div className="location-details">
+                      <h3>{selectedAerodrome.name}</h3>
+                      {selectedAerodrome.icao && (
+                        <p className="icao-code">{selectedAerodrome.icao}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="timestamp-card">
+                    <div className="timestamp-icon">{isPlannedTime ? '📅' : '🕐'}</div>
+                    <div className="timestamp-content">
+                      <p className="timestamp">
+                        {isPlannedTime ? (
+                          <>
+                            <strong>Planned:</strong>{' '}
+                            {plannedFlightTime ? new Date(plannedFlightTime).toLocaleString('en-GB', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }) : 'N/A'}
+                            {isAccurateForecast && <span className="forecast-accurate-note"> ✅</span>}
+                            {!isAccurateForecast && timeDifference !== null && timeDifference > 0 && (
+                              <span className="forecast-warning-note"> ⚠️ ±{timeDifference.toFixed(1)}h</span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <strong>Current:</strong>{' '}
+                            {new Date(currentWeather.time).toLocaleString('en-GB', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </>
                         )}
-                      </>
-                    ) : (
-                      <>
-                        <strong>Now:</strong>{' '}
-                        {new Date(currentWeather.time).toLocaleString('en-GB', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </>
-                    )}
-                  </p>
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="main-weather">
-                  <WeatherCard title="Temperature" value={Math.round(currentTemperature)} unit="°C" icon="🌡️" />
-                  <WeatherCard title="Feels Like" value={Math.round(currentApparentTemp)} unit="°C" icon="🤒" />
-                  <WeatherCard title="Visibility" value={(currentVisibility / 1000).toFixed(1)} unit="km" icon="👁️" />
-                  <WeatherCard title="Humidity" value={Math.round(currentHumidity)} unit="%" icon="💧" />
-                  <WeatherCard title="Dew Point" value={Math.round(currentDewpoint)} unit="°C" icon="💦" />
-                  <WeatherCard title="QNH" value={Math.round(currentQNH)} unit="hPa" icon="📊" />
-                  <WeatherCard title="Surface Pressure" value={Math.round(currentSurfacePressure)} unit="hPa" icon="⬇️" />
-                  <WeatherCard title="Rain Probability" value={Math.round(currentPrecipProb)} unit="%" icon="🌧️" />
+                {/* Primary Weather Metrics */}
+                <div className="weather-group">
+                  <h4 className="weather-group-title">
+                    <span className="group-icon">🌡️</span>
+                    <span className="group-text">Temperature</span>
+                  </h4>
+                  <div className="weather-group-cards">
+                    <WeatherCard title="Temperature" value={Math.round(currentTemperature)} unit="°C" icon="🌡️" className="primary-card" />
+                    <WeatherCard title="Feels Like" value={Math.round(currentApparentTemp)} unit="°C" icon="🤒" />
+                  </div>
+                </div>
+
+                {/* Visibility & Conditions */}
+                <div className="weather-group">
+                  <h4 className="weather-group-title">
+                    <span className="group-icon">👁️</span>
+                    <span className="group-text">Visibility & Conditions</span>
+                  </h4>
+                  <div className="weather-group-cards">
+                    <WeatherCard title="Visibility" value={(currentVisibility / 1000).toFixed(1)} unit="km" icon="👁️" />
+                    <WeatherCard title="Rain Probability" value={Math.round(currentPrecipProb)} unit="%" icon="🌧️" />
+                  </div>
+                </div>
+
+                {/* Atmospheric Conditions */}
+                <div className="weather-group">
+                  <h4 className="weather-group-title">
+                    <span className="group-icon">💧</span>
+                    <span className="group-text">Atmospheric</span>
+                  </h4>
+                  <div className="weather-group-cards">
+                    <WeatherCard title="Humidity" value={Math.round(currentHumidity)} unit="%" icon="💧" />
+                    <WeatherCard title="Dew Point" value={Math.round(currentDewpoint)} unit="°C" icon="💦" />
+                  </div>
+                </div>
+
+                {/* Pressure */}
+                <div className="weather-group">
+                  <h4 className="weather-group-title">
+                    <span className="group-icon">📊</span>
+                    <span className="group-text">Pressure</span>
+                  </h4>
+                  <div className="weather-group-cards">
+                    <WeatherCard title="QNH" value={Math.round(currentQNH)} unit="hPa" icon="⛰️" />
+                    <WeatherCard title="Surface Pressure" value={Math.round(currentSurfacePressure)} unit="hPa" icon="⬇️" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1554,10 +1652,36 @@ export default function Home() {
         }
 
         .location-info {
-          text-align: center;
-          margin-bottom: 1.25rem;
-          padding-bottom: 1.25rem;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+          margin-bottom: 1.5rem;
+        }
+
+        .location-header {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1rem;
+          padding: 1.25rem;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+          border-radius: 16px;
+          border: 2px solid rgba(99, 102, 241, 0.15);
+        }
+
+        .location-icon {
+          font-size: 2rem;
+          width: 56px;
+          height: 56px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 12px;
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .location-details {
+          flex: 1;
+          min-width: 0;
         }
 
         .location-info h3 {
@@ -1569,17 +1693,41 @@ export default function Home() {
         }
 
         .icao-code {
-          font-size: 1rem;
+          font-size: 0.9375rem;
           color: var(--color-primary, #6366f1);
           font-weight: 700;
-          margin-bottom: 0.625rem;
           letter-spacing: 0.05em;
         }
 
+        .timestamp-card {
+          display: flex;
+          align-items: center;
+          gap: 0.875rem;
+          padding: 0.875rem 1rem;
+          background: rgba(248, 250, 252, 0.8);
+          border-radius: 12px;
+          border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .timestamp-icon {
+          font-size: 1.5rem;
+          flex-shrink: 0;
+        }
+
+        .timestamp-content {
+          flex: 1;
+        }
+
         .timestamp {
-          font-size: 0.8125rem;
+          font-size: 0.875rem;
           color: var(--color-text-muted, #64748b);
-          line-height: 1.6;
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .timestamp strong {
+          color: var(--color-text, #1e293b);
+          font-weight: 600;
         }
 
         .forecast-note {
@@ -1613,11 +1761,57 @@ export default function Home() {
           margin-bottom: 0.25rem;
         }
 
-        /* Weather cards grid - 2 columns on mobile */
-        .main-weather {
+        /* Weather Groups */
+        .weather-group {
+          margin-bottom: 1.5rem;
+        }
+
+        .weather-group-title {
+          font-size: 0.8125rem;
+          font-weight: 700;
+          color: var(--color-text, #1e293b);
+          margin-bottom: 1rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          display: flex;
+          align-items: center;
+          gap: 0.625rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          line-height: 1.4;
+        }
+        .group-icon {
+          font-size: 1rem;
+          opacity: 0.8;
+          flex-shrink: 0;
+        }
+        .group-text {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .weather-group-cards {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 0.75rem;
+          width: 100%;
+        }
+
+        .primary-card {
+          grid-column: 1 / -1;
+        }
+
+        @media (min-width: 768px) {
+          .weather-group-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+          }
+          .primary-card {
+            grid-column: span 1;
+          }
         }
 
         /* ========================================
@@ -1903,23 +2097,69 @@ export default function Home() {
         /* ========================================
            TABLET STYLES FOR WEATHER
            ======================================== */
+        @media (max-width: 640px) {
+          .location-header {
+            flex-direction: column;
+            text-align: center;
+            padding: 1rem;
+            gap: 0.75rem;
+          }
+          .location-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.75rem;
+          }
+          .location-info h3 {
+            font-size: 1.125rem;
+          }
+          .timestamp-card {
+            padding: 0.75rem;
+            gap: 0.75rem;
+          }
+          .timestamp-icon {
+            font-size: 1.25rem;
+          }
+          .weather-group {
+            margin-bottom: 1.25rem;
+          }
+          .weather-group-title {
+            font-size: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.625rem;
+            gap: 0.5rem;
+          }
+          .group-icon {
+            font-size: 0.875rem;
+          }
+          .group-text {
+            font-size: 0.6875rem;
+          }
+          .weather-group-cards {
+            gap: 0.625rem;
+          }
+        }
+
         @media (min-width: 768px) {
           .weather-overview {
             padding: 1.5rem;
             margin-bottom: 1.5rem;
           }
 
-          .location-info {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
+          .location-header {
+            padding: 1.5rem;
+          }
+
+          .location-icon {
+            width: 64px;
+            height: 64px;
+            font-size: 2.25rem;
           }
 
           .location-info h3 {
             font-size: 1.5rem;
           }
 
-          .main-weather {
-            grid-template-columns: repeat(4, 1fr);
+          .weather-group-cards {
             gap: 1rem;
           }
 
@@ -1943,6 +2183,7 @@ export default function Home() {
         }
       `}</style>
     </div>
+    <AddToHomeScreen />
     </>
   );
 }
