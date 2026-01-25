@@ -28,7 +28,7 @@ export const UK_AERODROMES: Aerodrome[] = [
   { name: 'White Waltham', icao: 'EGLM', latitude: 51.5008, longitude: -0.7742 },
   { name: 'Southend', icao: 'EGMC', latitude: 51.5714, longitude: 0.6956 },
   // Smaller aerodromes and private airfields
-  { name: 'Kernan (Portadown)', latitude: 54.4200, longitude: -6.4500 },
+  { name: 'Kernan (Portadown)', latitude: 54.3860, longitude: -6.4002 },
   { name: 'Newtownards', icao: 'EGAD', latitude: 54.5811, longitude: -5.6919 },
   { name: 'Enniskillen/St Angelo', icao: 'EGAB', latitude: 54.3989, longitude: -7.6517 },
   { name: 'Ballykelly', latitude: 55.0600, longitude: -7.0200 },

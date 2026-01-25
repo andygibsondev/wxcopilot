@@ -71,7 +71,7 @@ export default function Home() {
     { id: 'conditions', label: 'Conditions', icon: '🌤️' },
     { id: 'wind', label: 'Wind', icon: '💨' },
     { id: 'clouds', label: 'Clouds', icon: '☁️' },
-    { id: 'metar', label: 'METAR/TAF', icon: '📋' },
+    { id: 'airfield', label: 'Airfield', icon: '🗺️' },
   ];
 
   // Load saved preferences from localStorage
@@ -144,6 +144,11 @@ export default function Home() {
         left: index * panelWidth,
         behavior: 'smooth'
       });
+      // Scroll the target panel to top
+      const targetPanel = swipeContainerRef.current.children[index] as HTMLElement;
+      if (targetPanel) {
+        targetPanel.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
     setActivePanel(index);
     setIsMenuOpen(false);
@@ -157,6 +162,11 @@ export default function Home() {
       const newIndex = Math.round(scrollLeft / panelWidth);
       if (newIndex !== activePanel && newIndex >= 0 && newIndex < PANELS.length) {
         setActivePanel(newIndex);
+        // Scroll the new panel to top
+        const targetPanel = swipeContainerRef.current.children[newIndex] as HTMLElement;
+        if (targetPanel) {
+          targetPanel.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
     }
   };
@@ -561,6 +571,9 @@ export default function Home() {
           >
             {/* Panel 1: Flight Decision */}
             <div className="swipe-panel" id="panel-decision">
+              <section className="weather-section">
+                <h2>✈️ Flight Decision</h2>
+              </section>
               <FlightDecision
                 windSpeed={hourly?.windspeed_10m[currentIndex] ?? 0}
                 visibility={currentVisibility}
@@ -573,9 +586,12 @@ export default function Home() {
 
             {/* Panel 2: Weather Conditions */}
             <div className="swipe-panel" id="panel-conditions">
+              <section className="weather-section">
+                <h2>🌤️ Weather Conditions</h2>
+              </section>
               <div className="weather-overview">
                 <div className="location-info">
-                  <h2>{selectedAerodrome.name}</h2>
+                  <h3>{selectedAerodrome.name}</h3>
                   {selectedAerodrome.icao && (
                     <p className="icao-code">{selectedAerodrome.icao}</p>
                   )}
@@ -646,12 +662,101 @@ export default function Home() {
               </section>
             </div>
 
-            {/* Panel 5: METAR/TAF */}
-            <div className="swipe-panel" id="panel-metar">
-              <MetarTafPanel
-                icao={selectedAerodrome.icao}
-                aerodromeName={selectedAerodrome.name}
-              />
+            {/* Panel 5: Airfield Information & METAR/TAF */}
+            <div className="swipe-panel" id="panel-airfield">
+              <section className="weather-section airfield-section">
+                <h2>🗺️ Airfield Information</h2>
+                
+                <div className="airfield-details">
+                  <div className="airfield-header">
+                    <h3>{selectedAerodrome.name}</h3>
+                    {selectedAerodrome.icao && (
+                      <span className="airfield-icao">{selectedAerodrome.icao}</span>
+                    )}
+                  </div>
+
+                  <div className="airfield-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Latitude</span>
+                      <span className="stat-value">{selectedAerodrome.latitude.toFixed(4)}°</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Longitude</span>
+                      <span className="stat-value">{selectedAerodrome.longitude.toFixed(4)}°</span>
+                    </div>
+                    {selectedAerodrome.icao && (
+                      <div className="stat-item">
+                        <span className="stat-label">ICAO Code</span>
+                        <span className="stat-value">{selectedAerodrome.icao}</span>
+                      </div>
+                    )}
+                    <div className="stat-item">
+                      <span className="stat-label">Type</span>
+                      <span className="stat-value">
+                        {selectedAerodrome.icao?.startsWith('EG') ? 'UK Aerodrome' : 'Airfield'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="airfield-map">
+                  <iframe
+                    title="Airfield Map"
+                    width="100%"
+                    height="300"
+                    style={{ border: 0, borderRadius: '12px' }}
+                    loading="lazy"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedAerodrome.longitude - 0.05}%2C${selectedAerodrome.latitude - 0.03}%2C${selectedAerodrome.longitude + 0.05}%2C${selectedAerodrome.latitude + 0.03}&layer=mapnik&marker=${selectedAerodrome.latitude}%2C${selectedAerodrome.longitude}`}
+                  />
+                  <a 
+                    href={`https://www.openstreetmap.org/?mlat=${selectedAerodrome.latitude}&mlon=${selectedAerodrome.longitude}#map=14/${selectedAerodrome.latitude}/${selectedAerodrome.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="map-link"
+                  >
+                    🔗 View larger map
+                  </a>
+                </div>
+
+                <div className="airfield-links">
+                  {selectedAerodrome.icao && (
+                    <>
+                      <a 
+                        href={`https://skyvector.com/airport/${selectedAerodrome.icao}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="airfield-link"
+                      >
+                        📊 SkyVector Charts
+                      </a>
+                      <a 
+                        href={`https://www.flightradar24.com/airport/${selectedAerodrome.icao.toLowerCase()}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="airfield-link"
+                      >
+                        ✈️ FlightRadar24
+                      </a>
+                    </>
+                  )}
+                  <a 
+                    href={`https://www.google.com/maps/search/?api=1&query=${selectedAerodrome.latitude},${selectedAerodrome.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="airfield-link"
+                  >
+                    🗺️ Google Maps
+                  </a>
+                </div>
+
+                {/* METAR/TAF Section */}
+                <div className="airfield-metar">
+                  <MetarTafPanel
+                    icao={selectedAerodrome.icao}
+                    aerodromeName={selectedAerodrome.name}
+                  />
+                </div>
+              </section>
             </div>
           </div>
 
@@ -684,6 +789,8 @@ export default function Home() {
 
         /* Glassmorphism card */
         .aerodrome-selector {
+          position: relative;
+          z-index: 1000;
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
@@ -720,12 +827,12 @@ export default function Home() {
           align-items: center;
           justify-content: space-between;
           width: 100%;
-          padding: 0.875rem 1rem;
+          padding: 0.5rem 0.75rem;
           background: rgba(255, 255, 255, 0.98);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border: none;
-          border-radius: var(--radius-lg, 16px);
+          border-radius: 0;
           cursor: pointer;
           transition: all var(--transition-base, 200ms);
           -webkit-tap-highlight-color: transparent;
@@ -733,18 +840,18 @@ export default function Home() {
 
         .collapsed-header:active {
           background: rgba(248, 250, 252, 0.95);
-          transform: scale(0.99);
         }
 
         .collapsed-info {
           display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 0.375rem;
+          flex-direction: row;
+          align-items: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
         }
 
         .collapsed-aerodrome {
-          font-size: 1.0625rem;
+          font-size: 0.875rem;
           font-weight: 700;
           color: var(--color-text, #1e293b);
         }
@@ -752,20 +859,20 @@ export default function Home() {
         .collapsed-icao {
           font-weight: 600;
           color: var(--color-primary, #6366f1);
-          margin-left: 0.5rem;
+          margin-left: 0.25rem;
         }
 
         .collapsed-details {
-          font-size: 0.875rem;
+          font-size: 0.75rem;
           color: var(--color-text-muted, #64748b);
           font-weight: 500;
         }
 
         .expand-icon {
-          font-size: 0.8125rem;
+          font-size: 0.75rem;
           font-weight: 600;
           color: var(--color-primary, #6366f1);
-          padding: 0.625rem 1rem;
+          padding: 0.375rem 0.625rem;
           background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
           border-radius: var(--radius-full, 9999px);
           white-space: nowrap;
@@ -1053,7 +1160,7 @@ export default function Home() {
           }
 
           .collapsed-header {
-            padding: 1rem 1.25rem;
+            padding: 0.5rem 1.25rem;
           }
 
           .selector-row {
@@ -1131,11 +1238,11 @@ export default function Home() {
           border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         }
 
-        .location-info h2 {
-          font-size: 1.625rem;
-          font-weight: 800;
+        .location-info h3 {
+          font-size: 1.25rem;
+          font-weight: 700;
           color: var(--color-text, #1e293b);
-          margin-bottom: 0.375rem;
+          margin-bottom: 0.25rem;
           letter-spacing: -0.02em;
         }
 
@@ -1208,29 +1315,24 @@ export default function Home() {
           gap: 0.5rem;
         }
 
-        .weather-section h2::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
-          margin-left: 0.5rem;
-        }
 
         /* ========================================
            SWIPEABLE PANELS
            ======================================== */
         .panel-tabs {
-          position: sticky;
-          top: calc(6.5rem + env(safe-area-inset-top));
+          position: fixed;
+          top: calc(6rem + env(safe-area-inset-top));
+          left: 0;
+          right: 0;
           z-index: 998;
           display: flex;
           gap: 0.25rem;
-          padding: 0.5rem;
+          padding: 0.375rem 0.75rem;
           background: rgba(15, 23, 42, 0.95);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          border-radius: var(--radius-lg, 16px);
-          margin-bottom: 0.75rem;
+          border-radius: 0;
+          margin-bottom: 0;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
@@ -1242,15 +1344,16 @@ export default function Home() {
 
         .panel-tab {
           flex: 1;
-          min-width: 60px;
+          min-width: 50px;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
+          justify-content: center;
           gap: 0.25rem;
-          padding: 0.5rem 0.375rem;
+          padding: 0.375rem 0.25rem;
           background: transparent;
           border: none;
-          border-radius: var(--radius-md, 12px);
+          border-radius: var(--radius-sm, 8px);
           color: rgba(255, 255, 255, 0.6);
           cursor: pointer;
           transition: all 200ms ease;
@@ -1264,26 +1367,29 @@ export default function Home() {
         }
 
         .tab-icon {
-          font-size: 1.25rem;
+          font-size: 1rem;
         }
 
         .tab-label {
-          font-size: 0.625rem;
+          font-size: 0.5rem;
           font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.02em;
+          letter-spacing: 0.01em;
         }
 
         .swipe-container {
           display: flex;
           overflow-x: auto;
+          overflow-y: hidden;
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
           gap: 2rem;
           margin: 0;
+          margin-top: 3.5rem;
           padding-left: 0.75rem;
           padding-right: 0.75rem;
+          height: calc(100dvh - 10rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
         }
 
         .swipe-container::-webkit-scrollbar {
@@ -1291,12 +1397,22 @@ export default function Home() {
         }
 
         .swipe-panel {
-          flex: 0 0 calc(100% - 1.5rem);
-          width: calc(100% - 1.5rem);
+          flex: 0 0 98%;
+          width: 98%;
           scroll-snap-align: center;
           scroll-snap-stop: always;
           padding: 0;
           box-sizing: border-box;
+          overflow-y: auto;
+          overflow-x: hidden;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+
+        .swipe-panel::-webkit-scrollbar {
+          display: none;
+          width: 0;
         }
 
         .panel-indicators {
@@ -1331,6 +1447,125 @@ export default function Home() {
         }
 
         /* ========================================
+           AIRFIELD INFORMATION PANEL
+           ======================================== */
+        .airfield-section {
+          padding-bottom: 2rem;
+        }
+
+        .airfield-details {
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: var(--radius-lg, 16px);
+          padding: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .airfield-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .airfield-header h3 {
+          font-size: 1.125rem;
+          font-weight: 700;
+          color: var(--color-text, #1e293b);
+          margin: 0;
+        }
+
+        .airfield-icao {
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: var(--color-primary, #6366f1);
+          background: rgba(99, 102, 241, 0.1);
+          padding: 0.25rem 0.75rem;
+          border-radius: var(--radius-full, 9999px);
+        }
+
+        .airfield-stats {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+
+        .stat-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .stat-label {
+          font-size: 0.6875rem;
+          font-weight: 600;
+          color: var(--color-text-muted, #64748b);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+
+        .stat-value {
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: var(--color-text, #1e293b);
+        }
+
+        .airfield-map {
+          margin-bottom: 1rem;
+        }
+
+        .airfield-map iframe {
+          display: block;
+          width: 100%;
+        }
+
+        .map-link {
+          display: block;
+          text-align: center;
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.7);
+          margin-top: 0.5rem;
+          text-decoration: none;
+        }
+
+        .map-link:hover {
+          color: var(--color-accent, #06b6d4);
+        }
+
+        .airfield-links {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .airfield-link {
+          flex: 1;
+          min-width: 120px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.375rem;
+          padding: 0.75rem 1rem;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: var(--radius-md, 12px);
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 200ms ease;
+        }
+
+        .airfield-link:hover {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+        }
+
+        .airfield-metar {
+          margin-top: 1.5rem;
+        }
+
+        /* ========================================
            TABLET STYLES FOR WEATHER
            ======================================== */
         @media (min-width: 768px) {
@@ -1344,8 +1579,8 @@ export default function Home() {
             padding-bottom: 1.5rem;
           }
 
-          .location-info h2 {
-            font-size: 1.75rem;
+          .location-info h3 {
+            font-size: 1.5rem;
           }
 
           .main-weather {
@@ -1362,7 +1597,8 @@ export default function Home() {
           }
 
           .panel-tabs {
-            top: calc(7rem + env(safe-area-inset-top));
+            top: calc(6.5rem + env(safe-area-inset-top));
+            padding: 0.375rem 1.5rem;
           }
 
           .panel-tab {
@@ -1381,8 +1617,8 @@ export default function Home() {
           }
 
           .swipe-panel {
-            flex: 0 0 calc(100% - 3rem);
-            width: calc(100% - 3rem);
+            flex: 0 0 98%;
+            width: 98%;
           }
         }
       `}</style>
