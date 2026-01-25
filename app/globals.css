@@ -277,7 +277,7 @@ a {
 
 /* Extra padding when collapsed panel is fixed at top */
 .container.has-collapsed-panel {
-  padding-top: calc(8rem + env(safe-area-inset-top));
+  padding-top: calc(5.5rem + env(safe-area-inset-top));
 }
 
 @media (min-width: 768px) {
@@ -288,7 +288,7 @@ a {
   }
 
   .container.has-collapsed-panel {
-    padding-top: calc(8.5rem + env(safe-area-inset-top));
+    padding-top: calc(6rem + env(safe-area-inset-top));
   }
 }
 
@@ -300,7 +300,7 @@ a {
   }
 
   .container.has-collapsed-panel {
-    padding-top: calc(9rem + env(safe-area-inset-top));
+    padding-top: calc(6.5rem + env(safe-area-inset-top));
   }
 }
 

@@ -321,3 +321,4 @@ The API returns JSON with the following structure:
 - **Celsius to Fahrenheit**: (°C × 9/5) + 32
 - **Fahrenheit to Celsius**: (°F - 32) × 5/9
 
+
