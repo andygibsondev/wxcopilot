@@ -271,24 +271,24 @@ a {
   max-width: 100%;
   margin: 0 auto;
   padding: 0.75rem;
-  padding-top: calc(4rem + env(safe-area-inset-top));
+  padding-top: calc(3.5rem + env(safe-area-inset-top) + 0.75rem);
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }
 
 /* Extra padding when collapsed panel is fixed at top */
 .container.has-collapsed-panel {
-  padding-top: calc(5.5rem + env(safe-area-inset-top));
+  padding-top: calc(3.5rem + env(safe-area-inset-top) + 2.5rem);
 }
 
 @media (min-width: 768px) {
   .container {
     max-width: 768px;
     padding: 1.5rem;
-    padding-top: calc(4.5rem + env(safe-area-inset-top));
+    padding-top: calc(4rem + env(safe-area-inset-top) + 1.5rem);
   }
 
   .container.has-collapsed-panel {
-    padding-top: calc(6rem + env(safe-area-inset-top));
+    padding-top: calc(4rem + env(safe-area-inset-top) + 3rem);
   }
 }
 
@@ -296,11 +296,11 @@ a {
   .container {
     max-width: 1024px;
     padding: 2rem;
-    padding-top: calc(5rem + env(safe-area-inset-top));
+    padding-top: calc(4rem + env(safe-area-inset-top) + 2rem);
   }
 
   .container.has-collapsed-panel {
-    padding-top: calc(6.5rem + env(safe-area-inset-top));
+    padding-top: calc(4rem + env(safe-area-inset-top) + 3.5rem);
   }
 }
 
