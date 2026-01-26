@@ -603,6 +603,43 @@
   margin-top: 0.5rem;
 }
 
+.selected-aerodrome-display.clickable {
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms);
+  -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.selected-aerodrome-display.clickable:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+}
+
+.selected-aerodrome-display.clickable:active:not(:disabled) {
+  transform: translateY(0);
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.selected-aerodrome-display.clickable:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.selected-aerodrome-edit {
+  margin-left: auto;
+  font-size: 0.875rem;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast, 150ms);
+}
+
+.selected-aerodrome-display.clickable:hover:not(:disabled) .selected-aerodrome-edit {
+  opacity: 1;
+}
+
 .selected-aerodrome-label {
   font-size: 0.75rem;
   font-weight: 600;

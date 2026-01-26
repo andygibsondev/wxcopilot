@@ -39,7 +39,13 @@ npm run dev
 
 ## Data Source
 
-This application uses the [Open-Meteo UK Met Office API](https://open-meteo.com/en/docs/ukmo-api), which provides free access to UK Met Office weather data without requiring API key registration.
+This application supports two weather data sources:
+
+1. **Open-Meteo API** (default): Free access to UK Met Office weather data via [Open-Meteo UK Met Office API](https://open-meteo.com/en/docs/ukmo-api). No API key required.
+
+2. **Met Office DataHub API**: Direct access to official Met Office data. Requires API key registration. See [Met Office DataHub Setup Guide](docs/metoffice-datahub-setup.md) for configuration.
+
+Set the `WEATHER_API_PROVIDER` environment variable to switch between providers (`openmeteo` or `metoffice`).
 
 ## Flight Decision Criteria
 

@@ -68,6 +68,7 @@ export default function Home() {
   const [aerodromeSearch, setAerodromeSearch] = useState('');
   const [showAerodromeList, setShowAerodromeList] = useState(false);
   const aerodromeSearchRef = useRef<HTMLInputElement>(null);
+  const aerodromeResultsRef = useRef<HTMLDivElement>(null);
   const [currentView, setCurrentView] = useState<'main' | 'about' | 'contact'>('main');
 
   const PANELS = [
@@ -142,21 +143,12 @@ export default function Home() {
     );
   }, [aerodromeSearch]);
 
-  // Auto-focus search input when panel opens
-  useEffect(() => {
-    if (!isPanelCollapsed && aerodromeSearchRef.current) {
-      // Small delay to ensure the panel is fully rendered
-      setTimeout(() => {
-        aerodromeSearchRef.current?.focus();
-      }, 100);
-    }
-  }, [isPanelCollapsed]);
-
   // Handle aerodrome selection
   const handleAerodromeSelect = (aerodrome: typeof UK_AERODROMES[0]) => {
     setSelectedAerodrome(aerodrome);
     setAerodromeSearch('');
-    setShowAerodromeList(false);
+    // Keep list open so user can easily change selection
+    // setShowAerodromeList(false);
   };
 
   // Initial app loading
@@ -219,7 +211,7 @@ export default function Home() {
     return date.toISOString();
   })() : null;
 
-  const fetchWeather = React.useCallback(async () => {
+  const fetchWeather = React.useCallback(async (shouldCollapse: boolean = false) => {
     setLoading(true);
     setError(null);
     try {
@@ -228,10 +220,19 @@ export default function Home() {
       const cacheBuster = new Date().getTime();
       let apiUrl = `/api/weather?latitude=${selectedAerodrome.latitude}&longitude=${selectedAerodrome.longitude}&_t=${cacheBuster}`;
       
-      if (plannedFlightTime) {
+      // Compute plannedFlightTime inside the callback to ensure we use current values
+      const currentPlannedFlightTime = selectedDay !== null ? (() => {
+        const now = new Date();
+        const date = new Date(now);
+        date.setDate(date.getDate() + selectedDay);
+        date.setHours(selectedHour, 0, 0, 0);
+        return date.toISOString();
+      })() : null;
+      
+      if (currentPlannedFlightTime) {
         // Calculate date range: same day as planned time (API requires same start/end date or range)
         // datetime-local gives us local time, we need to convert to Europe/London timezone
-        const plannedDate = new Date(plannedFlightTime);
+        const plannedDate = new Date(currentPlannedFlightTime);
         
         // Get the date in Europe/London timezone
         const londonDate = new Date(plannedDate.toLocaleString('en-US', { timeZone: 'Europe/London' }));
@@ -268,7 +269,10 @@ export default function Home() {
         throw new Error('Invalid weather data received from API');
       }
       setWeatherData(data);
-      setIsPanelCollapsed(true); // Collapse panel after successful fetch
+      // Only collapse panel if explicitly requested (e.g., on initial load)
+      if (shouldCollapse) {
+        setIsPanelCollapsed(true);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
@@ -278,11 +282,12 @@ export default function Home() {
     }
   }, [selectedAerodrome, selectedDay, selectedHour]);
 
-  // Auto-fetch weather on every app load (after preferences are loaded)
+  // Auto-fetch weather on initial app load only (after preferences are loaded)
+  const hasInitialFetched = useRef(false);
   useEffect(() => {
-    if (!isAppLoading && prefsLoaded) {
-      fetchWeather();
-      setIsPanelCollapsed(true); // Collapse the panel after auto-search
+    if (!isAppLoading && prefsLoaded && !hasInitialFetched.current) {
+      hasInitialFetched.current = true;
+      fetchWeather(true); // Collapse panel on initial load
     }
   }, [isAppLoading, prefsLoaded, fetchWeather]);
 
@@ -442,7 +447,13 @@ export default function Home() {
           onClick={() => setCurrentView('about')}
           aria-label="About Us"
         >
-          🚀
+          <img 
+            src="/icons/icons8-info.svg" 
+            alt="Info" 
+            width={20} 
+            height={20}
+            style={{ display: 'block' }}
+          />
         </button>
       </header>
 
@@ -581,7 +592,13 @@ export default function Home() {
           onClick={() => setCurrentView('about')}
           aria-label="About Us"
         >
-          🚀
+          <img 
+            src="/icons/icons8-info.svg" 
+            alt="Info" 
+            width={20} 
+            height={20}
+            style={{ display: 'block' }}
+          />
         </button>
       </header>
 
@@ -625,15 +642,23 @@ export default function Home() {
                     type="text"
                     placeholder="Type name or ICAO code (e.g., EGLL, Heathrow)..."
                     value={aerodromeSearch}
-                  onChange={(e) => {
+                    onChange={(e) => {
                       setAerodromeSearch(e.target.value);
                       setShowAerodromeList(true);
                     }}
                     onFocus={() => setShowAerodromeList(true)}
-                    onBlur={() => {
-                      // Delay hiding to allow click events
-                      setTimeout(() => setShowAerodromeList(false), 200);
-                  }}
+                    onBlur={(e) => {
+                      // Only hide if clicking outside the results list or search wrapper
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      const isClickingInside = relatedTarget && (
+                        relatedTarget.closest('.aerodrome-results') ||
+                        relatedTarget.closest('.aerodrome-search-wrapper') ||
+                        relatedTarget === aerodromeResultsRef.current
+                      );
+                      if (!isClickingInside) {
+                        setTimeout(() => setShowAerodromeList(false), 200);
+                      }
+                    }}
                   disabled={loading}
                     className="aerodrome-search-input"
                   />
@@ -652,7 +677,7 @@ export default function Home() {
                   )}
                 </div>
                 {showAerodromeList && filteredAerodromes.length > 0 && (
-                  <div className="aerodrome-results">
+                  <div className="aerodrome-results" ref={aerodromeResultsRef}>
                     <div className="aerodrome-results-header">
                       {filteredAerodromes.length} {filteredAerodromes.length === 1 ? 'result' : 'results'}
                     </div>
@@ -662,7 +687,14 @@ export default function Home() {
                           key={aerodrome.name}
                           type="button"
                           className={`aerodrome-item ${selectedAerodrome.name === aerodrome.name ? 'selected' : ''}`}
-                          onClick={() => handleAerodromeSelect(aerodrome)}
+                          onClick={() => {
+                            handleAerodromeSelect(aerodrome);
+                            // Keep focus on input for easy further searching
+                            setTimeout(() => {
+                              aerodromeSearchRef.current?.focus();
+                              setShowAerodromeList(true);
+                            }, 50);
+                          }}
                           disabled={loading}
                         >
                           <div className="aerodrome-item-content">
@@ -690,7 +722,16 @@ export default function Home() {
                   </div>
                 )}
                 {!showAerodromeList && (
-                  <div className="selected-aerodrome-display">
+                  <button
+                    type="button"
+                    className="selected-aerodrome-display clickable"
+                    onClick={() => {
+                      setShowAerodromeList(true);
+                      setTimeout(() => aerodromeSearchRef.current?.focus(), 50);
+                    }}
+                    disabled={loading}
+                    title="Click to change aerodrome"
+                  >
                     <span className="selected-aerodrome-label">Selected:</span>
                     <span className="selected-aerodrome-name">
                       {selectedAerodrome.name}
@@ -698,7 +739,8 @@ export default function Home() {
                         <span className="selected-aerodrome-icao"> ({selectedAerodrome.icao})</span>
                       )}
                     </span>
-                  </div>
+                    <span className="selected-aerodrome-edit">✏️</span>
+                  </button>
                 )}
               </div>
               
@@ -765,7 +807,12 @@ export default function Home() {
               </div>
             </div>
             
-            <button onClick={fetchWeather} disabled={loading} className="refresh-btn">
+            <button 
+              type="button"
+              onClick={() => fetchWeather(true)} 
+              disabled={loading} 
+              className="refresh-btn"
+            >
               {loading ? 'Loading...' : '🔄 Get Weather'}
             </button>
 
