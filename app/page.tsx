@@ -155,8 +155,7 @@ export default function Home() {
   const handleAerodromeSelect = (aerodrome: typeof UK_AERODROMES[0]) => {
     setSelectedAerodrome(aerodrome);
     setAerodromeSearch('');
-    // Keep list open so user can easily change selection
-    // setShowAerodromeList(false);
+    setShowAerodromeList(false);
   };
 
   // Initial app loading
@@ -769,11 +768,6 @@ export default function Home() {
                           className={`aerodrome-item ${selectedAerodrome.name === aerodrome.name ? 'selected' : ''}`}
                           onClick={() => {
                             handleAerodromeSelect(aerodrome);
-                            // Keep focus on input for easy further searching
-                            setTimeout(() => {
-                              aerodromeSearchRef.current?.focus();
-                              setShowAerodromeList(true);
-                            }, 50);
                           }}
                           disabled={loading}
                         >
