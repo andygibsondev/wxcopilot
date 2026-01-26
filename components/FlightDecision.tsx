@@ -591,7 +591,19 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
         boxShadow: `0 8px 24px ${decision.color}20`
       }}>
         <div className="decision-emoji-wrapper">
-          <div className="decision-emoji">{decision.emoji}</div>
+          <div className={`decision-emoji decision-emoji-${decision.status}`}>
+            <img 
+              src={
+                decision.status === 'good' 
+                  ? '/icons/flightStatus/flightOK.png'
+                  : decision.status === 'poor'
+                  ? '/icons/flightStatus/flightNo.png'
+                  : '/icons/flightStatus/flightMarginal.png'
+              }
+              alt={decision.text}
+              className="flight-status-image"
+            />
+          </div>
         </div>
         <div className="decision-text">
           <div className="decision-title">{decision.text}</div>
@@ -829,6 +841,18 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
           font-size: 2.5rem;
           filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
           line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+        .flight-status-image {
+          width: 64px;
+          height: 64px;
+          object-fit: contain;
+          display: block;
+          border-radius: 12px;
         }
         .decision-text {
           flex: 1;
@@ -899,6 +923,46 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
           padding-bottom: 1rem;
           border-bottom: 1px solid rgba(0, 0, 0, 0.06);
           line-height: 1.6;
+        }
+        /* Flight status image animations */
+        .flight-status-image {
+          transition: transform 0.3s ease-out;
+        }
+        .decision-emoji-good .flight-status-image {
+          animation: pulse 2s ease-in-out infinite;
+        }
+        .decision-emoji-poor .flight-status-image {
+          animation: fade 3s ease-in-out infinite;
+        }
+        .decision-emoji-marginal .flight-status-image {
+          animation: shake 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        @keyframes fade {
+          0%, 100% {
+            opacity: 0.8;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        @keyframes shake {
+          0%, 100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-2px);
+          }
+          75% {
+            transform: translateX(2px);
+          }
         }
         @media (max-width: 640px) {
           .criteria-explanation h3 {

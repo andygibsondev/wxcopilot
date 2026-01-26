@@ -70,6 +70,14 @@ export default function Home() {
   const aerodromeSearchRef = useRef<HTMLInputElement>(null);
   const aerodromeResultsRef = useRef<HTMLDivElement>(null);
   const [currentView, setCurrentView] = useState<'main' | 'about' | 'contact'>('main');
+  
+  // Pull-to-refresh state
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pullStartY = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const PULL_THRESHOLD = 80; // Distance in pixels to trigger refresh
 
   const PANELS = [
     { id: 'decision', label: 'Decision', icon: '✈️' },
@@ -603,7 +611,79 @@ export default function Home() {
       </header>
 
 
-      <div className={`container ${isPanelCollapsed ? 'has-collapsed-panel' : ''}`}>
+      {/* Pull-to-refresh indicator */}
+      {(isPulling || isRefreshing) && weatherData && (
+        <div 
+          className="pull-to-refresh-indicator"
+          style={{
+            transform: `translateX(-50%) translateY(${Math.min(pullDistance - 20, PULL_THRESHOLD * 1.2)}px)`,
+            opacity: Math.min(pullDistance / PULL_THRESHOLD, 1)
+          }}
+        >
+          <div className="pull-to-refresh-icon">
+            {isRefreshing ? (
+              <span className="spinning">🔄</span>
+            ) : pullDistance >= PULL_THRESHOLD ? (
+              <span>⬇️</span>
+            ) : (
+              <span>⬇️</span>
+            )}
+          </div>
+          <div className="pull-to-refresh-text">
+            {isRefreshing 
+              ? 'Refreshing...' 
+              : pullDistance >= PULL_THRESHOLD 
+                ? 'Release to refresh' 
+                : 'Pull to refresh'
+            }
+          </div>
+        </div>
+      )}
+
+      <div 
+        className={`container ${isPanelCollapsed ? 'has-collapsed-panel' : ''} ${isPulling ? 'pulling' : ''}`}
+        ref={containerRef}
+        onTouchStart={(e) => {
+          if (!weatherData || loading) return;
+          const container = containerRef.current;
+          if (!container) return;
+          
+          // Only allow pull-to-refresh when at the top of the page
+          const scrollTop = window.scrollY || document.documentElement.scrollTop;
+          if (scrollTop > 10) return;
+          
+          pullStartY.current = e.touches[0].clientY;
+          setIsPulling(true);
+        }}
+        onTouchMove={(e) => {
+          if (!isPulling || !weatherData || loading) return;
+          
+          const currentY = e.touches[0].clientY;
+          const distance = Math.max(0, currentY - pullStartY.current);
+          
+          // Only allow downward pull
+          if (distance > 0) {
+            setPullDistance(distance);
+            // Prevent default scrolling when pulling
+            if (distance > 10) {
+              e.preventDefault();
+            }
+          }
+        }}
+        onTouchEnd={() => {
+          if (!isPulling) return;
+          
+          if (pullDistance >= PULL_THRESHOLD && !loading) {
+            setIsRefreshing(true);
+            fetchWeather(false).finally(() => {
+              setIsRefreshing(false);
+            });
+          }
+          
+          setPullDistance(0);
+          setIsPulling(false);
+        }}
+      >
 
       <div id="search-section" className={`aerodrome-selector ${isPanelCollapsed ? 'collapsed' : ''}`}>
         {/* Collapsed Summary Header */}
