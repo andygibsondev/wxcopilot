@@ -925,6 +925,9 @@ export default function Home() {
 
       {weatherData && currentWeather && (
         <>
+          {/* Base Tab Container */}
+          {isPanelCollapsed && <div className="tab-container-base" />}
+          
           {/* Swipeable Panels Container */}
           <div 
             className="swipe-container"
@@ -1183,6 +1186,15 @@ export default function Home() {
               </button>
             ))}
           </nav>
+
+          {/* Footer Bar */}
+          <footer className="footer-bar">
+            <div className="footer-content">
+              <span className="footer-text">WxCoPilot</span>
+              <span className="footer-separator">•</span>
+              <span className="footer-text">Aviation Weather</span>
+            </div>
+          </footer>
         </>
       )}
     </div>
