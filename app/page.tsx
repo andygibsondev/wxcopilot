@@ -938,6 +938,7 @@ export default function Home() {
               </section>
               <FlightDecision
                 windSpeed={hourly?.windspeed_10m[currentIndex] ?? 0}
+                windGust={hourly?.windgusts_10m?.[currentIndex]}
                 visibility={currentVisibility}
                 cloudCover={currentCloudCover}
                 cloudBase={cloudBaseFeet}

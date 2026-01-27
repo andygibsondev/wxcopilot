@@ -24,6 +24,8 @@ const AIRCRAFT_LIMITS = {
     description: 'Commercial jets and large turboprops',
     windGood: 35,        // Strong aircraft, higher wind tolerance
     windMarginal: 45,
+    windGustGood: 50,     // Higher gust tolerance
+    windGustMarginal: 65,
     visGood: 5000,       // 5km minimum for VFR
     visMarginal: 3000,
     cloudBaseGood: 500,  // Lower cloud base acceptable with IFR capability
@@ -39,6 +41,8 @@ const AIRCRAFT_LIMITS = {
     description: 'Single/multi-engine piston aircraft (Cessna, Piper, etc.)',
     windGood: 20,        // Typical light aircraft crosswind limit ~15-20 kts
     windMarginal: 30,
+    windGustGood: 25,    // Gust tolerance for light aircraft
+    windGustMarginal: 35,
     visGood: 5000,       // 5km VFR minimum
     visMarginal: 3000,
     cloudBaseGood: 1000, // Need 1000ft clearance below cloud
@@ -54,6 +58,8 @@ const AIRCRAFT_LIMITS = {
     description: 'Microlights, ultralights, and flex-wing aircraft',
     windGood: 12,        // Very sensitive to wind
     windMarginal: 18,    // Max safe wind for most microlights
+    windGustGood: 15,    // Very sensitive to gusts
+    windGustMarginal: 22,
     visGood: 8000,       // Need excellent visibility
     visMarginal: 5000,
     cloudBaseGood: 1500, // Need higher cloud base for safe operations
@@ -116,6 +122,12 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
                 <td className="poor">&gt; {limits.windMarginal} kts</td>
               </tr>
               <tr>
+                <td><strong>Wind Gusts</strong></td>
+                <td className="good">&lt; {limits.windGustGood} kts</td>
+                <td className="marginal">{limits.windGustGood}-{limits.windGustMarginal} kts</td>
+                <td className="poor">&gt; {limits.windGustMarginal} kts</td>
+              </tr>
+              <tr>
                 <td><strong>Visibility</strong></td>
                 <td className="good">&gt; {limits.visGood / 1000} km</td>
                 <td className="marginal">{limits.visMarginal / 1000}-{limits.visGood / 1000} km</td>
@@ -158,6 +170,24 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
                 <div className="minimums-value poor">
                   <span className="value-label">Poor:</span>
                   <span className="value-text">&gt; {limits.windMarginal} kts</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="minimums-card">
+              <div className="minimums-card-header">🌪️ Wind Gusts</div>
+              <div className="minimums-card-values">
+                <div className="minimums-value good">
+                  <span className="value-label">Good:</span>
+                  <span className="value-text">&lt; {limits.windGustGood} kts</span>
+                </div>
+                <div className="minimums-value marginal">
+                  <span className="value-label">Marginal:</span>
+                  <span className="value-text">{limits.windGustGood}-{limits.windGustMarginal} kts</span>
+                </div>
+                <div className="minimums-value poor">
+                  <span className="value-label">Poor:</span>
+                  <span className="value-text">&gt; {limits.windGustMarginal} kts</span>
                 </div>
               </div>
             </div>
@@ -411,6 +441,7 @@ const MinimumsPanel: React.FC<MinimumsPanelProps> = ({ aircraftType, limits }) =
 
 interface FlightDecisionProps {
   windSpeed: number;
+  windGust?: number;
   visibility: number;
   cloudCover: number;
   cloudBase: number;
@@ -420,6 +451,7 @@ interface FlightDecisionProps {
 
 export const FlightDecision: React.FC<FlightDecisionProps> = ({
   windSpeed,
+  windGust,
   visibility,
   cloudCover,
   cloudBase,
@@ -431,6 +463,8 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
   // Convert km/h to mph: 1 km/h = 0.621371 mph
   const windSpeedKnots = windSpeed * 0.539957;
   const windSpeedMph = windSpeed * 0.621371;
+  const windGustKnots = windGust ? windGust * 0.539957 : null;
+  const windGustMph = windGust ? windGust * 0.621371 : null;
   // Convert meters to feet
   const visibilityFeet = visibility * 3.28084;
   const cloudBaseFeet = cloudBase;
@@ -445,6 +479,11 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
       marginal: windSpeedKnots >= limits.windGood && windSpeedKnots < limits.windMarginal,
       poor: windSpeedKnots >= limits.windMarginal,
     },
+    windGust: windGustKnots !== null ? {
+      good: windGustKnots < limits.windGustGood,
+      marginal: windGustKnots >= limits.windGustGood && windGustKnots < limits.windGustMarginal,
+      poor: windGustKnots >= limits.windGustMarginal,
+    } : null,
     visibility: {
       good: visibilityFeet >= limits.visGood,
       marginal: visibilityFeet >= limits.visMarginal && visibilityFeet < limits.visGood,
@@ -479,6 +518,9 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
       if (name === 'windSpeed') {
         threshold = `< ${limits.windGood} kts`;
         explanation = `Wind speed is within safe limits for ${aircraft}`;
+      } else if (name === 'windGust') {
+        threshold = `< ${limits.windGustGood} kts`;
+        explanation = `Wind gusts are within safe limits for ${aircraft}`;
       } else if (name === 'visibility') {
         threshold = `≥ ${(limits.visGood / 1000).toFixed(0)} km`;
         explanation = `Visibility meets minimum requirements for ${aircraft}`;
@@ -497,6 +539,9 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
       if (name === 'windSpeed') {
         threshold = `${limits.windGood}-${limits.windMarginal} kts`;
         explanation = `Wind speed is elevated for ${aircraft}. Exercise caution`;
+      } else if (name === 'windGust') {
+        threshold = `${limits.windGustGood}-${limits.windGustMarginal} kts`;
+        explanation = `Wind gusts are elevated for ${aircraft}. Exercise extra caution`;
       } else if (name === 'visibility') {
         threshold = `${(limits.visMarginal / 1000).toFixed(0)}-${(limits.visGood / 1000).toFixed(0)} km`;
         explanation = `Visibility is reduced but may be acceptable for experienced ${aircraft} pilots`;
@@ -515,6 +560,9 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
       if (name === 'windSpeed') {
         threshold = `≥ ${limits.windMarginal} kts`;
         explanation = `High wind speeds - not recommended for ${aircraft}`;
+      } else if (name === 'windGust') {
+        threshold = `≥ ${limits.windGustMarginal} kts`;
+        explanation = `Strong wind gusts - hazardous for ${aircraft}`;
       } else if (name === 'visibility') {
         threshold = `< ${(limits.visMarginal / 1000).toFixed(0)} km`;
         explanation = `Poor visibility - below safe limits for ${aircraft}`;
@@ -542,9 +590,11 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
     };
 
     Object.values(criteria).forEach((criterion) => {
-      if (criterion.good) scores.good++;
-      else if (criterion.marginal) scores.marginal++;
-      else scores.poor++;
+      if (criterion && typeof criterion === 'object' && 'good' in criterion) {
+        if (criterion.good) scores.good++;
+        else if (criterion.marginal) scores.marginal++;
+        else scores.poor++;
+      }
     });
 
     if (scores.poor > 0 || scores.marginal >= 3) {
@@ -658,6 +708,38 @@ export const FlightDecision: React.FC<FlightDecisionProps> = ({
               </div>
             </div>
           </div>
+
+          {criteria.windGust && windGustKnots !== null && (
+            <div className={`criterion-detailed ${criteria.windGust.good ? 'good' : criteria.windGust.marginal ? 'marginal' : 'poor'}`}>
+              <div className="criterion-icon">🌪️</div>
+              <div className="criterion-content">
+                <div className="criterion-header">
+                  <span className="criterion-label">Wind Gusts</span>
+                  <span className={`criterion-status ${criteria.windGust.good ? 'good' : criteria.windGust.marginal ? 'marginal' : 'poor'}`}>
+                    {criteria.windGust.good ? '✅ Good' : criteria.windGust.marginal ? '⚠️ Marginal' : '❌ Poor'}
+                  </span>
+                </div>
+                <div className="criterion-value-large">
+                  {windGustKnots.toFixed(0)} <span className="criterion-unit">kts</span>
+                  <span className="criterion-value-secondary">({windGustMph?.toFixed(0)} mph)</span>
+                </div>
+                <div className="criterion-progress-bar">
+                  <div 
+                    className={`criterion-progress ${criteria.windGust.good ? 'good' : criteria.windGust.marginal ? 'marginal' : 'poor'}`}
+                    style={{ 
+                      width: `${Math.min(100, (windGustKnots / limits.windGustMarginal) * 100)}%` 
+                    }}
+                  />
+                </div>
+                <div className="criterion-threshold">
+                  <strong>Threshold:</strong> {getCriterionDetails('windGust', criteria.windGust, windGustKnots, 'kts').threshold}
+                </div>
+                <div className="criterion-explanation-text">
+                  {getCriterionDetails('windGust', criteria.windGust, windGustKnots, 'kts').explanation}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className={`criterion-detailed ${criteria.visibility.good ? 'good' : criteria.visibility.marginal ? 'marginal' : 'poor'}`}>
             <div className="criterion-icon">👁️</div>

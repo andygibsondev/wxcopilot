@@ -50,6 +50,17 @@ export const AddToHomeScreen: React.FC = () => {
     }
   }, []);
 
+  // Auto-dismiss after 10 seconds
+  useEffect(() => {
+    if (showPrompt && !isStandalone) {
+      const timer = setTimeout(() => {
+        setShowPrompt(false);
+      }, 10000); // 10 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [showPrompt, isStandalone]);
+
   const handleInstall = async () => {
     if (deferredPrompt) {
       // Android - trigger native install prompt
