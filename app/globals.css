@@ -275,6 +275,13 @@ a {
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }
 
+/* When panel or search list is expanded, float above swipe container */
+.container.panel-expanded,
+.container.search-expanded {
+  position: relative;
+  z-index: 20;
+}
+
 /* Extra padding when collapsed panel is fixed at top */
 .container.has-collapsed-panel {
   padding-top: calc(3.5rem + env(safe-area-inset-top) + 2.5rem);

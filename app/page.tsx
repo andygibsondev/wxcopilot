@@ -640,7 +640,7 @@ export default function Home() {
       )}
 
       <div 
-        className={`container ${isPanelCollapsed ? 'has-collapsed-panel' : ''} ${isPulling ? 'pulling' : ''}`}
+        className={`container ${isPanelCollapsed ? 'has-collapsed-panel' : ''} ${isPulling ? 'pulling' : ''} ${!isPanelCollapsed ? 'panel-expanded' : ''} ${showAerodromeList && !isPanelCollapsed ? 'search-expanded' : ''}`}
         ref={containerRef}
         onTouchStart={(e) => {
           if (!weatherData || loading) return;

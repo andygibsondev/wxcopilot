@@ -300,6 +300,15 @@
   transition: all var(--transition-slow, 300ms) ease;
 }
 
+/* Floating style when panel is expanded */
+.aerodrome-selector:not(.collapsed) {
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.15),
+    0 4px 24px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transform: translateY(-4px);
+}
+
 /* Collapsed state */
 .aerodrome-selector.collapsed {
   position: fixed;
@@ -1190,6 +1199,8 @@
    SWIPEABLE PANELS
    ======================================== */
 .swipe-container {
+  position: relative;
+  z-index: 1;
   display: flex;
   overflow-x: auto;
   overflow-y: hidden;
@@ -1229,6 +1240,18 @@
   display: none; /* Chrome, Safari, Opera */
   width: 0;
   height: 0;
+}
+
+/* When panel or search list is expanded, ensure search section stacks above swipe container */
+.container.search-expanded .aerodrome-selector,
+.container.panel-expanded .aerodrome-selector {
+  z-index: 1002;
+  position: absolute;
+}
+
+.container.search-expanded .swipe-container,
+.container.panel-expanded .swipe-container {
+  z-index: 0;
 }
 
 /* ========================================
