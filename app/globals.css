@@ -71,9 +71,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   min-height: 100dvh;
-  
+  background-color: #0f172a;
   /* Modern dark gradient background */
-  background: 
+  background-image:
     radial-gradient(ellipse at top, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
     radial-gradient(ellipse at bottom, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
     linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);

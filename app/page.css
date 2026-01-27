@@ -1211,8 +1211,8 @@
   padding-top: 10px;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-  height: calc(100dvh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4rem - 3rem);
-  margin-bottom: calc(3rem + env(safe-area-inset-bottom));
+  height: calc(100dvh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4rem - 2.25rem);
+  margin-bottom: calc(2.25rem + env(safe-area-inset-bottom));
 }
 
 .swipe-container::-webkit-scrollbar {
@@ -1227,7 +1227,7 @@
   scroll-snap-align: center;
   scroll-snap-stop: always;
   padding: 0;
-  padding-bottom: calc(5rem + 3rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5rem + 2.25rem + env(safe-area-inset-bottom));
   box-sizing: border-box;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -1259,7 +1259,7 @@
    ======================================== */
 .bottom-tab-bar {
   position: fixed;
-  bottom: calc(3rem + env(safe-area-inset-bottom));
+  bottom: calc(2.25rem + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
   z-index: 1000;
@@ -1348,9 +1348,9 @@
   top: calc(3.5rem + env(safe-area-inset-top) + 3rem + 2.5rem);
   left: 0;
   right: 0;
-  bottom: calc(env(safe-area-inset-bottom) + 3rem);
+  bottom: calc(env(safe-area-inset-bottom) + 2.25rem);
   margin-top: 21px;
-  height: calc(100dvh - 3.5rem - env(safe-area-inset-top) - 3rem - 2.5rem - 21px - 3rem - env(safe-area-inset-bottom));
+  height: calc(100dvh - 3.5rem - env(safe-area-inset-top) - 3rem - 2.5rem - 21px - 2.25rem - env(safe-area-inset-bottom));
 }
 
 /* ========================================
@@ -1366,12 +1366,24 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(6, 182, 212, 0.2);
-  padding: 0.75rem 1rem;
-  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  padding: 0.375rem 1rem;
+  padding-bottom: calc(0.375rem + env(safe-area-inset-bottom));
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Fill iPhone safe area (home indicator) so no white strip shows */
+.footer-bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: env(safe-area-inset-bottom);
+  background: #0f172a;
+  pointer-events: none;
 }
 
 .footer-content {
@@ -1408,8 +1420,8 @@
 
   /* Adjust swipe container bottom when footer is present */
   .has-collapsed-panel .swipe-container {
-    bottom: calc(env(safe-area-inset-bottom) + 3.5rem);
-    height: calc(100dvh - 4rem - env(safe-area-inset-top) - 3rem - 2.5rem - 21px - 3.5rem - env(safe-area-inset-bottom));
+    bottom: calc(env(safe-area-inset-bottom) + 3rem);
+    height: calc(100dvh - 4rem - env(safe-area-inset-top) - 3rem - 2.5rem - 21px - 3rem - env(safe-area-inset-bottom));
   }
 }
 
@@ -1421,7 +1433,7 @@
     border-radius: 20px 20px 0 0;
     border-left: 1px solid rgba(6, 182, 212, 0.2);
     border-right: 1px solid rgba(6, 182, 212, 0.2);
-    bottom: calc(3.5rem + env(safe-area-inset-bottom));
+    bottom: calc(3rem + env(safe-area-inset-bottom));
   }
 
   .bottom-tab {
@@ -1447,9 +1459,9 @@
     top: calc(4rem + env(safe-area-inset-top) + 3rem + 2.5rem);
     left: 0;
     right: 0;
-    bottom: calc(env(safe-area-inset-bottom) + 3.5rem);
+    bottom: calc(env(safe-area-inset-bottom) + 3rem);
     margin-top: 21px;
-    height: calc(100dvh - 4rem - env(safe-area-inset-top) - 3rem - 2.5rem - 21px - 3.5rem - env(safe-area-inset-bottom));
+    height: calc(100dvh - 4rem - env(safe-area-inset-top) - 3rem - 2.5rem - 21px - 3rem - env(safe-area-inset-bottom));
   }
 }
 
