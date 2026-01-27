@@ -12,6 +12,7 @@ import { MetarTafPanel } from '@/components/MetarTafPanel';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { AirfieldMap } from '@/components/AirfieldMap';
 import { AddToHomeScreen } from '@/components/AddToHomeScreen';
+import { PasswordScreen, isAuthenticated as checkAuthentication } from '@/components/PasswordScreen';
 import './page.css';
 
 // Generate day options for the next 7 days
@@ -64,6 +65,8 @@ export default function Home() {
   const [defaultsSaved, setDefaultsSaved] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [activePanel, setActivePanel] = useState(0);
+  const [isAuthenticated, setIsAuthenticatedState] = useState<boolean | null>(null);
+  const passwordSuccessTimerRef = useRef<NodeJS.Timeout | null>(null);
   const swipeContainerRef = useRef<HTMLDivElement>(null);
   const [aerodromeSearch, setAerodromeSearch] = useState('');
   const [showAerodromeList, setShowAerodromeList] = useState(false);
@@ -158,13 +161,40 @@ export default function Home() {
     setShowAerodromeList(false);
   };
 
-  // Initial app loading
+  // Check authentication on mount
   useEffect(() => {
-    // Simulate minimum loading time for splash screen
-    const timer = setTimeout(() => {
+    const authenticated = checkAuthentication();
+    setIsAuthenticatedState(authenticated);
+    if (authenticated) {
+      // Simulate minimum loading time for splash screen
+      const timer = setTimeout(() => {
+        setIsAppLoading(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  // Handle successful password entry
+  const handlePasswordSuccess = () => {
+    setIsAuthenticatedState(true);
+    setIsAppLoading(true); // Show loading screen after authentication
+    // Clear any existing timer
+    if (passwordSuccessTimerRef.current) {
+      clearTimeout(passwordSuccessTimerRef.current);
+    }
+    // Start app loading after authentication
+    passwordSuccessTimerRef.current = setTimeout(() => {
       setIsAppLoading(false);
     }, 1500);
-    return () => clearTimeout(timer);
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (passwordSuccessTimerRef.current) {
+        clearTimeout(passwordSuccessTimerRef.current);
+      }
+    };
   }, []);
 
   // Scroll to panel by index
@@ -429,8 +459,13 @@ export default function Home() {
   const dewPoint = currentTemperature - ((100 - currentHumidity) / 5);
   const cloudBaseFeet = Math.max(0, (currentTemperature - dewPoint) * 400);
 
-  // Show loading screen on initial load
-  if (isAppLoading) {
+  // Show password screen if not authenticated
+  if (isAuthenticated === false) {
+    return <PasswordScreen onSuccess={handlePasswordSuccess} />;
+  }
+
+  // Show loading screen while checking authentication or during initial app load
+  if (isAuthenticated === null || isAppLoading) {
     return <LoadingScreen message="Preparing your flight data..." />;
   }
 
@@ -1129,6 +1164,16 @@ export default function Home() {
                   </a>
                 </div>
 
+                
+
+                {/* METAR/TAF Section */}
+                <div className="airfield-metar">
+                  <MetarTafPanel
+                    icao={selectedAerodrome.icao}
+                    aerodromeName={selectedAerodrome.name}
+                  />
+                </div>
+
                 <div className="airfield-links">
                   {selectedAerodrome.icao && (
                     <>
@@ -1158,14 +1203,6 @@ export default function Home() {
                   >
                     🗺️ Google Maps
                   </a>
-                </div>
-
-                {/* METAR/TAF Section */}
-                <div className="airfield-metar">
-                  <MetarTafPanel
-                    icao={selectedAerodrome.icao}
-                    aerodromeName={selectedAerodrome.name}
-                  />
                 </div>
               </section>
             </div>
