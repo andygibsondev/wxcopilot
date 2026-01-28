@@ -1,6 +1,6 @@
 # Met Office DataHub API Setup Guide
 
-This guide explains how to configure the app to use the Met Office DataHub API.
+This guide explains how to configure the app to use the Met Office **Weather DataHub Site Specific** API (GET /point/hourly).
 
 ## Environment Variables
 
@@ -8,27 +8,24 @@ Create a `.env.local` file in the project root with the following variables:
 
 ```env
 # Weather API Configuration
-# Set to 'metoffice' to use Met Office DataHub, or 'openmeteo' for Open-Meteo (default)
+# Set to 'metoffice' to use Met Office DataHub, or 'openmeteo' for Open-Meteo
 WEATHER_API_PROVIDER=metoffice
 
-# Met Office DataHub API Key
-# Get your API key from: https://www.metoffice.gov.uk/services/data/datapoint
-# Format depends on your API key type:
-# - For IBM API Connect: "client-id:client-secret"
-# - For Bearer token: "your-bearer-token"
-# - For API key: "your-api-key"
+# Met Office DataHub API Key (Site Specific subscription)
+# Get your API key from: https://datahub.metoffice.gov.uk (Weather DataHub → Site Specific)
+# Passed as the 'apikey' header per Met Office utilities.
 MET_OFFICE_API_KEY=your_api_key_here
 
-# Optional: Override the default Met Office DataHub API endpoint
-# MET_OFFICE_API_URL=https://api-metoffice.apiconnect.ibmcloud.com/metoffice/production/v0/forecasts/point/hourly
+# Optional: Override the default Met Office Site Specific API endpoint (GET /point/hourly)
+# MET_OFFICE_API_URL=https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/hourly
 ```
 
 ## Getting Your API Key
 
-1. Visit the [Met Office DataHub](https://www.metoffice.gov.uk/services/data/datapoint)
-2. Register for an account
-3. Create an API key
-4. Copy the key to your `.env.local` file
+1. Visit [Met Office Weather DataHub](https://datahub.metoffice.gov.uk)
+2. Register or sign in, subscribe to **Site Specific** forecast
+3. Create an application and copy the API key (JWT)
+4. Set `MET_OFFICE_API_KEY` in your `.env.local` file
 
 ## Testing Both APIs
 
@@ -39,7 +36,7 @@ You can test both APIs by using the `provider` query parameter:
 
 ## API Response Mapping
 
-The Met Office DataHub API response structure may vary. The transformation function in `app/api/weather/route.ts` attempts to map common field names, but you may need to adjust the `transformMetOfficeResponse` function based on your actual API response.
+The Site Specific API returns a structure with a time series (e.g. `features[].properties.timeSeries` or `properties.timeSeries`). The `transformMetOfficeResponse` function in `app/api/weather/route.ts` maps Met Office fields to our `WeatherData` format. If the real response shape differs, adjust that function.
 
 Common field mappings:
 - `screenTemperature` → `temperature_2m`
@@ -51,14 +48,14 @@ Common field mappings:
 ## Troubleshooting
 
 ### Authentication Errors
-- Verify your API key is correct
-- Check if your API key format matches the expected format (see environment variables above)
-- Ensure the API key has the necessary permissions
+- Verify your API key is correct and not expired (JWTs have a limited lifetime)
+- Ensure the key is for **Site Specific** / `sitespecific/v0`
+- The app sends the key in the `apikey` header; see [weather_datahub_utilities](https://github.com/MetOffice/weather_datahub_utilities) `site_specific_download`.
 
 ### Endpoint Errors
-- Verify the API endpoint URL is correct
-- Check the Met Office DataHub API documentation for the latest endpoint structure
-- Update `MET_OFFICE_API_URL` in `.env.local` if needed
+- Default endpoint: `https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/hourly`
+- See [DataHub API documentation](https://datahub.metoffice.gov.uk/docs/f/category/site-specific/type/site-specific/api-documentation#get-/point/hourly)
+- Override with `MET_OFFICE_API_URL` in `.env.local` if needed
 
 ### Data Mapping Errors
 - Check the actual API response structure using browser dev tools or Postman
