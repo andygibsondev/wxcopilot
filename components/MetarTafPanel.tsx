@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-
-const METAR_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+import React, { useState, useEffect } from 'react';
 
 // Helper functions for human-readable TAF parsing
 const getCloudCoverDescription = (cover: string): string => {
@@ -183,23 +181,10 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
   const [data, setData] = useState<MetarTafData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const lastFetchAtRef = useRef<number | null>(null);
-  const lastFetchIcaoRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!icao) {
       setData(null);
-      lastFetchIcaoRef.current = null;
-      return;
-    }
-
-    // Throttle: skip fetch if we already fetched this icao < 5 mins ago
-    const now = Date.now();
-    if (
-      lastFetchIcaoRef.current === icao &&
-      lastFetchAtRef.current != null &&
-      now - lastFetchAtRef.current < METAR_COOLDOWN_MS
-    ) {
       return;
     }
 
@@ -217,8 +202,6 @@ export const MetarTafPanel: React.FC<MetarTafPanelProps> = ({
           throw new Error(result.error);
         }
         setData(result);
-        lastFetchAtRef.current = Date.now();
-        lastFetchIcaoRef.current = icao;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch METAR/TAF data';
         setError(errorMessage);

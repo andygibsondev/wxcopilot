@@ -83,11 +83,6 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const PULL_THRESHOLD = 80; // Distance in pixels to trigger refresh
 
-  // 5-min refresh throttle: don't refetch until 5 mins after last successful refresh
-  const REFRESH_COOLDOWN_MS = 5 * 60 * 1000;
-  const lastRefreshAtRef = useRef<number | null>(null);
-  const [throttleMessage, setThrottleMessage] = useState<string | null>(null);
-
   const PANELS = [
     { id: 'decision', label: 'Decision', icon: '✈️' },
     { id: 'conditions', label: 'Conditions', icon: '🌤️' },
@@ -263,25 +258,14 @@ export default function Home() {
     return date.toISOString();
   })() : null;
 
-  const fetchWeather = React.useCallback(async (shouldCollapse: boolean = false, isRefresh: boolean = false) => {
-    // Throttle refresh: don't call API until 5 mins after last successful refresh
-    if (isRefresh && lastRefreshAtRef.current != null) {
-      const elapsed = Date.now() - lastRefreshAtRef.current;
-      if (elapsed < REFRESH_COOLDOWN_MS) {
-        const secs = Math.ceil((REFRESH_COOLDOWN_MS - elapsed) / 1000);
-        setThrottleMessage(`Data cached. Next refresh in ${secs}s`);
-        setTimeout(() => setThrottleMessage(null), 3000);
-        return;
-      }
-    }
-
+  const fetchWeather = React.useCallback(async (shouldCollapse: boolean = false) => {
     setLoading(true);
     setError(null);
-    setThrottleMessage(null);
     try {
       // Build API URL with optional date range for planned flight time
-      // No cache-buster: we use 5-min server cache and client throttle
-      let apiUrl = `/api/weather?latitude=${selectedAerodrome.latitude}&longitude=${selectedAerodrome.longitude}`;
+      // Add cache-busting parameter to ensure fresh data on every load
+      const cacheBuster = new Date().getTime();
+      let apiUrl = `/api/weather?latitude=${selectedAerodrome.latitude}&longitude=${selectedAerodrome.longitude}&_t=${cacheBuster}`;
       
       // Compute plannedFlightTime inside the callback to ensure we use current values
       const currentPlannedFlightTime = selectedDay !== null ? (() => {
@@ -332,7 +316,6 @@ export default function Home() {
         throw new Error('Invalid weather data received from API');
       }
       setWeatherData(data);
-      lastRefreshAtRef.current = Date.now();
       // Only collapse panel if explicitly requested (e.g., on initial load)
       if (shouldCollapse) {
         setIsPanelCollapsed(true);
@@ -351,7 +334,7 @@ export default function Home() {
   useEffect(() => {
     if (!isAppLoading && prefsLoaded && !hasInitialFetched.current) {
       hasInitialFetched.current = true;
-      fetchWeather(true, false); // Collapse panel on initial load; not a refresh (no throttle)
+      fetchWeather(true); // Collapse panel on initial load
     }
   }, [isAppLoading, prefsLoaded, fetchWeather]);
 
@@ -736,7 +719,7 @@ export default function Home() {
           
           if (pullDistance >= PULL_THRESHOLD && !loading) {
             setIsRefreshing(true);
-            fetchWeather(false, true).finally(() => {
+            fetchWeather(false).finally(() => {
               setIsRefreshing(false);
             });
           }
@@ -946,7 +929,7 @@ export default function Home() {
             <div className="weather-cta-wrap">
               <button 
                 type="button"
-                onClick={() => fetchWeather(true, true)} 
+                onClick={() => fetchWeather(true)} 
                 disabled={loading} 
                 className="refresh-btn"
                 aria-label={loading ? 'Loading weather' : 'Brief the weather for selected aerodrome'}
@@ -963,9 +946,6 @@ export default function Home() {
                   </>
                 )}
               </button>
-              {throttleMessage && (
-                <p className="throttle-message">{throttleMessage}</p>
-              )}
             </div>
 
             {/* Default Settings */}
