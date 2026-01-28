@@ -73,6 +73,7 @@ export default function Home() {
   const aerodromeSearchRef = useRef<HTMLInputElement>(null);
   const aerodromeResultsRef = useRef<HTMLDivElement>(null);
   const [currentView, setCurrentView] = useState<'main' | 'about' | 'contact'>('main');
+  const isDevBypassAuth = process.env.NODE_ENV === 'development';
   
   // Pull-to-refresh state
   const [pullDistance, setPullDistance] = useState(0);
@@ -161,8 +162,15 @@ export default function Home() {
     setShowAerodromeList(false);
   };
 
-  // Check authentication on mount
+  // Check authentication on mount (skipped in development to make UI debugging easier)
   useEffect(() => {
+    if (isDevBypassAuth) {
+      // In development, bypass auth and loading to make layout/debugging easier
+      setIsAuthenticatedState(true);
+      setIsAppLoading(false);
+      return;
+    }
+
     const authenticated = checkAuthentication();
     setIsAuthenticatedState(authenticated);
     if (authenticated) {
@@ -172,10 +180,12 @@ export default function Home() {
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isDevBypassAuth]);
 
   // Handle successful password entry
   const handlePasswordSuccess = () => {
+    // In development, the auth gate is already bypassed, but keep this logic
+    // so production behaviour remains unchanged.
     setIsAuthenticatedState(true);
     setIsAppLoading(true); // Show loading screen after authentication
     // Clear any existing timer
@@ -459,13 +469,13 @@ export default function Home() {
   const dewPoint = currentTemperature - ((100 - currentHumidity) / 5);
   const cloudBaseFeet = Math.max(0, (currentTemperature - dewPoint) * 400);
 
-  // Show password screen if not authenticated
-  if (isAuthenticated === false) {
+  // Show password screen if not authenticated (production only – dev bypasses this)
+  if (!isDevBypassAuth && isAuthenticated === false) {
     return <PasswordScreen onSuccess={handlePasswordSuccess} />;
   }
 
-  // Show loading screen while checking authentication or during initial app load
-  if (isAuthenticated === null || isAppLoading) {
+  // Show loading screen while checking authentication or during initial app load (production only)
+  if (!isDevBypassAuth && (isAuthenticated === null || isAppLoading)) {
     return <LoadingScreen message="Preparing your flight data..." />;
   }
 
@@ -954,6 +964,22 @@ export default function Home() {
         </div>
       )}
 
+       {/* Bottom Tab Bar */}
+       <nav className="bottom-tab-bar">
+            {PANELS.map((panel, index) => (
+              <button
+                key={panel.id}
+                className={`bottom-tab ${activePanel === index ? 'active' : ''}`}
+                onClick={() => scrollToPanel(index)}
+                aria-label={`Go to ${panel.label}`}
+              >
+                <span className="bottom-tab-icon">{panel.icon}</span>
+                <span className="bottom-tab-label">{panel.label}</span>
+                {activePanel === index && <span className="bottom-tab-indicator" />}
+              </button>
+            ))}
+          </nav>
+
       {loading && !weatherData && (
         <div className="loading">Loading weather data...</div>
       )}
@@ -1208,30 +1234,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Bottom Tab Bar */}
-          <nav className="bottom-tab-bar">
-            {PANELS.map((panel, index) => (
-              <button
-                key={panel.id}
-                className={`bottom-tab ${activePanel === index ? 'active' : ''}`}
-                onClick={() => scrollToPanel(index)}
-                aria-label={`Go to ${panel.label}`}
-              >
-                <span className="bottom-tab-icon">{panel.icon}</span>
-                <span className="bottom-tab-label">{panel.label}</span>
-                {activePanel === index && <span className="bottom-tab-indicator" />}
-              </button>
-            ))}
-          </nav>
-
-          {/* Footer Bar */}
-          <footer className="footer-bar">
-            <div className="footer-content">
-              <span className="footer-text">WxCoPilot</span>
-              <span className="footer-separator">•</span>
-              <span className="footer-text">Aviation Weather</span>
-            </div>
-          </footer>
+         
         </>
       )}
     </div>
