@@ -1002,6 +1002,17 @@
   font-size: 0.875rem;
 }
 
+.throttle-message {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  border: 1px solid #7dd3fc;
+  font-size: 0.875rem;
+}
+
 .loading {
   text-align: center;
   padding: 3rem 1rem;

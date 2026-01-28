@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeatherData } from '@/types/weather';
+import { checkUsage, incrementUsage, rateLimitHeaders } from '@/lib/usage';
+
+const CACHE_SECONDS = 300; // 5 minutes
 
 /**
  * Weather API Route - Supports both Met Office DataHub and Open-Meteo
@@ -11,6 +14,14 @@ import { WeatherData } from '@/types/weather';
  * For testing, you can also use ?provider=metoffice or ?provider=openmeteo query parameter
  */
 export async function GET(request: NextRequest) {
+  const check = await checkUsage(request);
+  if (!check.allowed) {
+    return NextResponse.json(
+      { error: check.message },
+      { status: 429, headers: rateLimitHeaders(check.context) }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const latitude = searchParams.get('latitude');
   const longitude = searchParams.get('longitude');
@@ -42,7 +53,10 @@ export async function GET(request: NextRequest) {
       throw new Error('Invalid weather data structure received');
     }
 
-    return NextResponse.json(data);
+    await incrementUsage(request);
+    return NextResponse.json(data, {
+      headers: rateLimitHeaders(check.context, { consumed: 1 }),
+    });
   } catch (error) {
     console.error('Error fetching weather:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch weather data';
@@ -89,7 +103,7 @@ async function fetchMetOfficeData(
 
   const response = await fetch(url.toString(), {
     headers,
-    next: { revalidate: 300 }, // Cache for 5 minutes
+    next: { revalidate: CACHE_SECONDS },
   });
 
   if (!response.ok) {
@@ -261,7 +275,7 @@ async function fetchOpenMeteoData(
   }
 
   const response = await fetch(url.toString(), {
-    next: { revalidate: 300 }, // Cache for 5 minutes
+    next: { revalidate: CACHE_SECONDS },
   });
 
   if (!response.ok) {
