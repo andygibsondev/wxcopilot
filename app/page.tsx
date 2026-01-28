@@ -943,17 +943,30 @@ export default function Home() {
               </div>
             </div>
             
-            <button 
-              type="button"
-              onClick={() => fetchWeather(true, true)} 
-              disabled={loading} 
-              className="refresh-btn"
-            >
-              {loading ? 'Loading...' : '🔄 Get Weather'}
-            </button>
-            {throttleMessage && (
-              <p className="throttle-message">{throttleMessage}</p>
-            )}
+            <div className="weather-cta-wrap">
+              <button 
+                type="button"
+                onClick={() => fetchWeather(true, true)} 
+                disabled={loading} 
+                className="refresh-btn"
+                aria-label={loading ? 'Loading weather' : 'Brief the weather for selected aerodrome'}
+              >
+                {loading ? (
+                  <>
+                    <span className="refresh-btn-icon" aria-hidden>⏳</span>
+                    Loading…
+                  </>
+                ) : (
+                  <>
+                    <span className="refresh-btn-icon" aria-hidden>🌤️</span>
+                    Check the Skies
+                  </>
+                )}
+              </button>
+              {throttleMessage && (
+                <p className="throttle-message">{throttleMessage}</p>
+              )}
+            </div>
 
             {/* Default Settings */}
             <div className="defaults-section">
