@@ -31,11 +31,16 @@ export const AirfieldMap: React.FC<AirfieldMapProps> = ({
     import('leaflet').then((L) => {
       if (!mapContainerRef.current) return;
 
-      // Fix for default icon path issue
-      delete (L.default.Icon.Default.prototype as any)._getIconUrl;
-      L.default.Icon.Default.mergeOptions({
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      // Custom pin marker icon (SVG) - 50% size
+      const pinSvg = `<svg width="25" height="41" viewBox="0 0 50 82" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M25 0C11.1929 0 0 11.1929 0 25C0 43.75 25 82 25 82C25 82 50 43.75 50 25C50 11.1929 38.8071 0 25 0ZM25 37.5C18.0964 37.5 12.5 31.9036 12.5 25C12.5 18.0964 18.0964 12.5 25 12.5C31.9036 12.5 37.5 18.0964 37.5 25C37.5 31.9036 31.9036 37.5 25 37.5Z" fill="#2A71B0"/>
+  <circle cx="25" cy="25" r="9" fill="white"/>
+</svg>`;
+      const pinIcon = L.default.divIcon({
+        html: pinSvg,
+        className: 'airfield-map-pin-icon',
+        iconSize: [25, 41],
+        iconAnchor: [12.5, 41],
       });
 
       // Initialize map if not already created
@@ -58,17 +63,14 @@ export const AirfieldMap: React.FC<AirfieldMapProps> = ({
           maxZoom: 19,
         }).addTo(mapRef.current);
 
-        // Add marker
-        markerRef.current = L.default.marker([latitude, longitude])
-          .addTo(mapRef.current)
-          .bindPopup(`<strong>${name}</strong>${icao ? `<br>${icao}` : ''}`)
-          .openPopup();
+        // Add marker with custom pin icon (no popup label)
+        markerRef.current = L.default.marker([latitude, longitude], { icon: pinIcon })
+          .addTo(mapRef.current);
       } else {
         // Update map center and marker position if coordinates change
         mapRef.current.setView([latitude, longitude], 14);
         if (markerRef.current) {
           markerRef.current.setLatLng([latitude, longitude]);
-          markerRef.current.setPopupContent(`<strong>${name}</strong>${icao ? `<br>${icao}` : ''}`);
         }
       }
     });
@@ -81,7 +83,7 @@ export const AirfieldMap: React.FC<AirfieldMapProps> = ({
         markerRef.current = null;
       }
     };
-  }, [isClient, latitude, longitude, name, icao]);
+  }, [isClient, latitude, longitude]);
 
   if (!isClient) {
     return (
@@ -123,6 +125,13 @@ export const AirfieldMap: React.FC<AirfieldMapProps> = ({
         :global(.leaflet-popup-content strong) {
           color: #1e293b;
           font-weight: 600;
+        }
+        :global(.airfield-map-pin-icon) {
+          background: none !important;
+          border: none !important;
+        }
+        :global(.airfield-map-pin-icon svg) {
+          display: block;
         }
       `}</style>
     </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { WeatherData } from '@/types/weather';
 import { UK_AERODROMES } from '@/data/aerodromes';
+import { getAerodromeDetails } from '@/data/aerodrome-details';
 import { WeatherCard } from '@/components/WeatherCard';
 import { WindDisplay } from '@/components/WindDisplay';
 import { CloudBaseDisplay } from '@/components/CloudBaseDisplay';
@@ -73,6 +74,7 @@ export default function Home() {
   const aerodromeSearchRef = useRef<HTMLInputElement>(null);
   const aerodromeResultsRef = useRef<HTMLDivElement>(null);
   const [currentView, setCurrentView] = useState<'main' | 'about' | 'contact'>('main');
+  const [aerodromeDetailsExpanded, setAerodromeDetailsExpanded] = useState(false);
   const isDevBypassAuth = process.env.NODE_ENV === 'development';
   
   // Pull-to-refresh state
@@ -916,6 +918,87 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            {/* Pull-down aerodrome details (runways, elevation, frequency) */}
+            {!showAerodromeList && (
+              <div className="aerodrome-details-wrap">
+                <button
+                  type="button"
+                  className="aerodrome-details-trigger"
+                  onClick={() => setAerodromeDetailsExpanded(!aerodromeDetailsExpanded)}
+                  disabled={loading}
+                  aria-expanded={aerodromeDetailsExpanded}
+                  aria-controls="aerodrome-details-panel"
+                >
+                  <span className="aerodrome-details-trigger-label">
+                    {aerodromeDetailsExpanded ? 'Hide' : 'Show'} aerodrome details
+                  </span>
+                  <span className="aerodrome-details-trigger-icon" aria-hidden>
+                    {aerodromeDetailsExpanded ? '▲' : '▼'}
+                  </span>
+                </button>
+                <div
+                  id="aerodrome-details-panel"
+                  className={`aerodrome-details-panel ${aerodromeDetailsExpanded ? 'expanded' : ''}`}
+                  role="region"
+                  aria-label="Aerodrome details"
+                >
+                  {aerodromeDetailsExpanded && (() => {
+                    const details = getAerodromeDetails(selectedAerodrome.icao ?? undefined, selectedAerodrome.name);
+                    if (!details || (!details.runways?.length && details.elevationFt == null && !details.frequencies?.length)) {
+                      return (
+                        <p className="aerodrome-details-empty">
+                          No runway or frequency details available for {selectedAerodrome.name}.
+                        </p>
+                      );
+                    }
+                    return (
+                      <div className="aerodrome-details-content">
+                        {details.elevationFt != null && (
+                          <div className="aerodrome-detail-row">
+                            <span className="aerodrome-detail-label">Elevation</span>
+                            <span className="aerodrome-detail-value">{details.elevationFt} ft AMSL</span>
+                          </div>
+                        )}
+                        {details.runways && details.runways.length > 0 && (
+                          <div className="aerodrome-detail-block">
+                            <span className="aerodrome-detail-label">Runways</span>
+                            <ul className="aerodrome-runways-list">
+                              {details.runways.map((rw) => (
+                                <li key={rw.designator} className="aerodrome-runway-item">
+                                  <span className="runway-designator">{rw.designator}</span>
+                                  {rw.lengthM != null && <span className="runway-length">{rw.lengthM} m</span>}
+                                  {rw.surface && <span className="runway-surface">{rw.surface}</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {details.frequencies && details.frequencies.length > 0 && (
+                          <div className="aerodrome-detail-block">
+                            <span className="aerodrome-detail-label">Frequencies</span>
+                            <ul className="aerodrome-freq-list">
+                              {details.frequencies.map((f) => (
+                                <li key={`${f.name}-${f.mhz}`} className="aerodrome-freq-item">
+                                  <span className="freq-name">{f.name}</span>
+                                  <span className="freq-mhz">{f.mhz} MHz</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {details.notes && (
+                          <div className="aerodrome-detail-row aerodrome-notes">
+                            <span className="aerodrome-detail-label">Notes</span>
+                            <span className="aerodrome-detail-value">{details.notes}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
 
             <div className="aircraft-selector">
               <label>Aircraft Type:</label>

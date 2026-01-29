@@ -62,10 +62,34 @@ export interface WeatherData {
   };
 }
 
+export interface Runway {
+  /** Designator e.g. "09/27", "04L/22R" */
+  designator: string;
+  /** Length in metres */
+  lengthM?: number;
+  /** Surface type */
+  surface?: string;
+  /** Heading (magnetic) for the lower number, e.g. 90 for 09 */
+  heading?: number;
+}
+
+export interface AerodromeDetails {
+  /** Elevation in feet (AMSL) */
+  elevationFt?: number;
+  /** Runways */
+  runways?: Runway[];
+  /** Radio frequencies e.g. "Tower 118.30", "ATIS 127.25" */
+  frequencies?: { name: string; mhz: string }[];
+  /** Optional notes (circuit direction, etc.) */
+  notes?: string;
+}
+
 export interface Aerodrome {
   name: string;
   icao?: string;
   latitude: number;
   longitude: number;
+  /** Optional extended details (runways, elevation, frequency) */
+  details?: AerodromeDetails;
 }
 
