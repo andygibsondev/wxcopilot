@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       throw new Error('Invalid weather data structure received');
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json({ ...data, provider });
   } catch (error) {
     console.error('Error fetching weather:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch weather data';

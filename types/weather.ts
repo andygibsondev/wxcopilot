@@ -1,4 +1,7 @@
+export type WeatherProvider = 'metoffice' | 'openmeteo';
+
 export interface WeatherData {
+  provider?: WeatherProvider;
   latitude: number;
   longitude: number;
   generationtime_ms: number;

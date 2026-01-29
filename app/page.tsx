@@ -639,6 +639,14 @@ export default function Home() {
             priority
           />
         </div>
+        {weatherData?.provider && (
+          <span 
+            className="header-data-source" 
+            title={weatherData.provider === 'metoffice' ? 'Met Office DataHub' : 'Open-Meteo'}
+          >
+            {weatherData.provider === 'metoffice' ? 'Met Office' : 'Open-Meteo'}
+          </span>
+        )}
         <button 
           className="info-btn"
           onClick={() => setCurrentView('about')}

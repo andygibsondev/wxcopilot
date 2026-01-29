@@ -256,6 +256,19 @@
   transform: scale(0.96);
 }
 
+.header-data-source {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.12);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-right: 0.25rem;
+}
+
 @media (min-width: 768px) {
   .fixed-header {
     min-height: 4rem;
